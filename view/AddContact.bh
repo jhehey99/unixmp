@@ -1,0 +1,150 @@
+#!/bin/bash
+
+AddContact_LAYOUT="${L}/add_contact.bl"
+
+this.showDefault()
+{
+    cat "$AddContact_LAYOUT"
+}
+
+this.showMessage()
+{
+    echo "Enter the following details"
+    echo "Details marked with * are required"
+}
+
+this.isValidName()
+{
+    local NAME="$1"
+    local MUSTNOTNULL="$2"
+    local MAX=50
+
+    # check if can be null and is null
+    if [[ "$MUSTNOTNULL" = true && -z "$NAME" ]]; then
+        echo "This detail is required..."
+        return 1
+    fi
+
+    # check if greater than $MAX characters
+    if [ ${#NAME} -gt $MAX ]; then
+        echo "Must not exceed $MAX characters..."
+        return 1
+    fi
+
+    # check if contains non-alpha characters
+    if echo "$NAME" | grep -iq [^a-z]; then
+        echo "Must only consist of alpha characters..."
+        return 1
+    fi
+
+    return 0
+}
+
+this.readName()
+{
+    # First Name
+    while echo -n "*First Name: " && read FN; do
+        if this.isValidName "$FN" true; then
+            break
+        fi
+    done
+
+    # Middle Name
+    while echo -n "Middle Name: " && read MN; do
+        if this.isValidName "$MN" false; then
+            break
+        fi
+    done
+
+    # Last Name
+    while echo -n "*Last Name: " && read LN; do
+        if this.isValidName "$LN" true; then
+            break
+        fi
+    done
+}
+
+this.readSex()
+{
+    while echo -n "*Sex [M/F]: " && read SX; do
+
+        # Not Empty
+        if [ -z "$SX" ]; then
+            echo "This detail is required..."; continue
+        fi
+
+        # Male or Female lng
+        case "$SX" in
+            [mMfF])
+                break ;;
+        esac
+        echo "[M/F] Only..."
+    done
+}
+
+this.readPhoneNumber()
+{
+    # Start with 9, followed by 9 digits
+    while echo -n "Phone Number: +63" && read PN; do
+        if echo "$PN" | grep -qE "^9[0-9]{9}$"; then
+            break
+        fi
+        echo "Invalid Phone Number..."
+    done
+}
+
+this.readEmail()
+{
+    local MAX=255
+    # local-part@domain
+    # local - 1 or more and can contain alphanum or the ff symbols: _.#!$%&+/=*^{}|~-
+    # domain - alphanum, can have hyphen in between '-', then alphanum, then '.' then alphanum and .
+    while echo -n "Email Address: " && read EA; do
+        # check if greater than MAX # of characters
+        if [ ${#EA} -gt $MAX ]; then
+            echo "Invalid Email Address..."; continue
+        fi
+
+        if echo "$EA" | grep -Eqiw '^([a-z0-9_.#!$%&+/=*^{}|~-]+@[a-z0-9]+[a-z0-9-][a-z0-9]+[.][a-z.]+)$'; then
+            break
+        fi
+        echo "Invalid Email Address..."
+    done
+}
+
+this.readLocation()
+{
+    echo -n "Address: ";    read AD
+    echo -n "City: ";       read CT
+
+    while echo -n "Zip Code: " && read ZP; do
+        # Hindi naman required
+        if [ -z "$ZP" ]; then
+            break
+        fi
+
+        # Pag may input, dapat exactly 4 digits
+        if echo "$ZP" | grep -Eq '^[0-9]{4}$'; then
+            break
+        fi
+        echo "Invalid Zip Code..."
+    done
+}
+
+AddContact.Show()
+{
+    this.showDefault
+    this.showMessage
+    this.readName
+    this.readSex
+    this.readPhoneNumber
+    this.readEmail
+    this.readLocation
+
+    # pagdating dito, valid na lahat
+    addContact "$FN" "$MN" "$LN" "$SX" "$PN" "$EA" "$AD" "$CT" "$ZP"
+
+    while [ $APPSTATE -eq $AppState_ADD ]; do
+        read -s -n1 KEY
+    done
+}

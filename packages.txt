@@ -1,0 +1,2 @@
+apt install xterm -y
+apt install mariadb-server -y

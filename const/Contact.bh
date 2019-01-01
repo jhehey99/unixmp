@@ -1,0 +1,12 @@
+#!/bin/bash
+Con_ID='id'
+Con_FN='firstName'
+Con_MN='middleName'
+Con_LN='lastName'
+Con_SX='sex'
+Con_PN='phone'
+Con_EA='email'
+Con_AD='address'
+Con_CT='city'
+Con_ZP='zipCode'
+Con_DA='dateAdded'

@@ -1,0 +1,12 @@
+# sort
+for i in $(seq 0 $(($NLINE-1))); do
+    for j in $(seq 0 $(($NLINE-$i-1))); do
+        # echo "i - ${i} | j - ${j}"
+
+        if [[ "${STARR[$i]}" > "${STARR[j]}" ]]; then
+            STMP="${STARR[$i]}"
+            STARR[$i]="${STARR[$j]}"
+            STARR[$j]="$STMP"
+        fi
+    done
+done

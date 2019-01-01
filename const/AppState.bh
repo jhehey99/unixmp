@@ -1,0 +1,9 @@
+#!/bin/bash
+AppState_STOP=0
+AppState_MENU=1
+AppState_ADD=2
+AppState_EDIT=3
+AppState_DELETE=4
+AppState_VIEW=5
+AppState_LOAD=6
+AppState_NUM=7

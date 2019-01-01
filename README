@@ -1,0 +1,39 @@
+##########################################
+***** File Naming Convetion *****
+
+lowerCamelCase.bash - executable bash scripts
+    Usage: bash script.bash || script.bash
+
+UpperCamelCase.bh - bash headers (parang import?)
+    Usage: source header.bh
+
+lower_lower.bl - bash layouts
+    Usage: cat layout.bl
+
+##########################################
+***** Configs *****
+
+Paths are set up in .app.conf
+
+Aliases are set up in .app.conf
+
+Logs are written to .logs
+
+Packages needed are in .packages
+
+##########################################
+***** Directory Structure Meaning *****
+/mp     - base app Directory
+/const  - contains constants (parang enum)
+/core   - contains core app logic
+/db     - database config and initialization
+/var    - extra files?
+/layout - contains layouts of what is displayed
+/term   - related to terminal display
+/util   - utility files such as logging
+/view   - contains view logic
+
+##########################################
+***** Functions *****
+FileName.FunctioName - used in/out of the file (parang public)
+fileName.functionName - used in the file only (parang private)

@@ -1,0 +1,105 @@
+#!/bin/bash
+
+# layout files
+Menu_LAYOUTINIT="${L}/menu.bl.init"
+Menu_LAYOUT="${L}/menu.bl"
+
+this.quit()
+{
+    APPSTATE=$AppState_STOP
+}
+
+this.showDefault()
+{
+    cat "$Menu_LAYOUT"
+}
+
+this.showMenuItem()
+{
+    case $MENUSTATE in
+        $MenuState_ADD)
+            APPSTATE=$AppState_ADD
+        ;;
+        $MenuState_QUIT)
+            this.quit
+        ;;
+        *)
+            log "Menu - showMenuItem() - Invalid Menu State..."
+        ;;
+    esac
+}
+
+this.readKey()
+{
+    # reads 1 character only and silent mode
+    read -s -n1 KEY
+    case $KEY in
+        [qQ]) # From menu, press q to quit
+            this.quit
+        ;;
+        [wW]) # Up
+            if [ $MENUSTATE -gt $(( $MenuState_NULL + 1 )) ]; then
+                (( MENUSTATE-= 1 ))
+            fi
+        ;;
+        [sS]) # Down
+            if [ $MENUSTATE -lt $(( $MenuState_NUM - 1 )) ]; then
+                (( MENUSTATE+= 1 ))
+            fi
+        ;;
+        "") # Enter
+            this.showMenuItem
+            # echo "You Entered ${MENUSTATE}"
+        ;;
+        *)
+            log "Menu - this.readKey() - Invalid Key..."
+        ;;
+    esac
+}
+
+this.update()
+{
+    clear
+
+    # pag 0, walang selected, so ung default lng.
+    if [ $MENUSTATE -eq 0 ]; then
+        this.showDefault
+        return 0
+    fi
+
+    # update ung display nung Menu
+    local CHAR="~"        # to indicate na selected
+    local LINEHEIGHT=3     #
+    local LINESTART=$(( 4 * $MENUSTATE ))
+    local HEADER=$(( $LINESTART - $LINEHEIGHT ))
+
+    local LINETOTAL=$(cat "$Menu_LAYOUT" | wc -l)
+    local TAILER=$(( $LINETOTAL - $LINESTART ))
+
+    head -$HEADER "$Menu_LAYOUT"
+    head -$LINESTART "$Menu_LAYOUT" | tail -$LINEHEIGHT | tr " " $CHAR
+    tail -$TAILER "$Menu_LAYOUT"
+    # echo "APPSTATE = ${APPSTATE} || MENUSTATE = ${MENUSTATE}"
+}
+
+Menu.Init()
+{
+    # dapat same ung menu.bl at menu.bl.init
+    if ! diff "$Menu_LAYOUT" "$Menu_LAYOUTINIT"; then
+        cp "$Menu_LAYOUTINIT" "$Menu_LAYOUT"
+        log "Menu - Copying Initial Layout..."
+    fi
+    log "Menu - Initialized..."
+}
+
+Menu.Show()
+{
+    # eto ung display
+    this.showDefault
+
+    # While nasa menu yung application
+    while [ $APPSTATE -eq $AppState_MENU ]; do
+        this.readKey
+        this.update
+    done
+}

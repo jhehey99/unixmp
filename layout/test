@@ -1,0 +1,33 @@
+#!/bin/bash
+
+MENUSTATE=6
+
+if [ $MENUSTATE -eq 0 ]; then
+    cp menu.bl.init menu.bl
+    cat menu.bl
+    exit 0
+fi
+
+MENU=( $(cat menu.bl) )
+
+(( LINESTART=4 * $MENUSTATE ))
+LINECOUNT=3
+
+(( HEADER=$LINESTART - $LINECOUNT ))
+
+LINETOTAL=$(cat menu.bl | wc -l)
+(( TAILER=$LINETOTAL - $LINESTART ))
+
+echo $LINETOTAL
+
+# (( LINEEND=$LINESTART + 2 ))
+
+
+# LINES=$(cat -n menu.bl | grep -w [${LINESTART}-${LINEEND}])
+# echo "$LINES"
+#
+# head -$HEADER menu.bl
+#
+# head -$LINESTART menu.bl | tail -$LINECOUNT | tr " " "~"
+#
+# tail -$TAILER menu.bl
