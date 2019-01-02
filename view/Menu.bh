@@ -14,18 +14,33 @@ this.showDefault()
     cat "$Menu_LAYOUT"
 }
 
+this.init()
+{
+    # dapat same ung menu.bl at menu.bl.init
+    if ! diff "$Menu_LAYOUT" "$Menu_LAYOUTINIT"; then
+        cp "$Menu_LAYOUTINIT" "$Menu_LAYOUT"
+        log "Menu - Copying Initial Layout..."
+    fi
+    log "Menu - Initialized..."
+}
+
 this.showMenuItem()
 {
     case $MENUSTATE in
         $MenuState_ADD)
-            APPSTATE=$AppState_ADD
-        ;;
+            APPSTATE=$AppState_ADD;;
+        $MenuState_EDIT)
+            APPSTATE=$AppState_EDIT;;
+        $MenuState_DELETE)
+            APPSTATE=$AppState_DELETE;;
+        $MenuState_VIEW)
+            APPSTATE=$AppState_VIEW;;
+        $MenuState_LOAD)
+            APPSTATE=$AppState_LOAD;;
         $MenuState_QUIT)
-            this.quit
-        ;;
+            this.quit;;
         *)
-            log "Menu - showMenuItem() - Invalid Menu State..."
-        ;;
+            log "Menu - showMenuItem() - Invalid Menu State...";;
     esac
 }
 
@@ -82,19 +97,10 @@ this.update()
     # echo "APPSTATE = ${APPSTATE} || MENUSTATE = ${MENUSTATE}"
 }
 
-Menu.Init()
-{
-    # dapat same ung menu.bl at menu.bl.init
-    if ! diff "$Menu_LAYOUT" "$Menu_LAYOUTINIT"; then
-        cp "$Menu_LAYOUTINIT" "$Menu_LAYOUT"
-        log "Menu - Copying Initial Layout..."
-    fi
-    log "Menu - Initialized..."
-}
-
 Menu.Show()
 {
     # eto ung display
+    this.init
     this.showDefault
 
     # While nasa menu yung application
@@ -102,4 +108,11 @@ Menu.Show()
         this.readKey
         this.update
     done
+}
+
+Menu.PressKeyToMenu()
+{
+    echo -n "Press any key to go back to menu..."
+    read -s -n1
+    APPSTATE=$AppState_MENU
 }

@@ -5,7 +5,7 @@ source ".db.conf"
 queroot()
 {
     # First Argument is the sql statement
-    PASSFILE="${HOME}/dev/mariadb/.root.pass"
+    PASSFILE=".root.pass"
     if ! [ -f "$PASSFILE" ]; then
         echo "Database root password file doesn't exists";
     fi

@@ -16,11 +16,9 @@ dscmp()
 
     if [[ "$S1" > "$S2" ]]; then
         echo "$S1"
-        exit 0
+    else
+        echo "$S2"
     fi
-
-    echo "$S2"
-    exit 1
 }
 
 # STRS=( $(cat "$FILE") )

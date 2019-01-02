@@ -1,0 +1,13 @@
+#!/bin/bash
+
+
+
+
+
+ViewContact.Show()
+{
+    echo "ViewContact"
+
+    Menu.PressKeyToMenu
+
+}

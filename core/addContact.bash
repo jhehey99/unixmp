@@ -16,7 +16,7 @@ ZP="$9"
 NOW=$(date +"%F")
 
 shopt -s expand_aliases
-alias query='../db/query.bash'
+alias query='query.bash'
 
 NOW=$(date +"%F %T")
 SQL="INSERT INTO Contact(firstName, middleName, lastName, sex, phone, email, address, city, zipCode, dateAdded)

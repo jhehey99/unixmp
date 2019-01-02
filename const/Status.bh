@@ -1,3 +1,4 @@
 #!/bin/bash
 
 Status_NORMAL=0
+Status_INVSTATE=1

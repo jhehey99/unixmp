@@ -29,12 +29,22 @@ Window.Show()
     clear
     case $APPSTATE in
         $AppState_MENU)
-            Menu.Init
-            Menu.Show
-        ;;
+            Menu.Show;;
         $AppState_ADD)
-            AddContact.Show
-        ;;
+            AddContact.Show;;
+        $AppState_EDIT)
+            EditContact.Show;;
+        $AppState_DELETE)
+            DeleteContact.Show;;
+        $AppState_VIEW)
+            ViewContact.Show;;
+        $AppState_LOAD)
+            LoadContact.Show;;
+        *)
+            # log invalid app state, tas stop ung program
+            log "Invalid App State (${APPSTATE}...)"
+            APPSTATUS=$Status_INVSTATE
+            APPSTATE=$AppState_STOP
     esac
 }
 

@@ -4,7 +4,6 @@ source ".app.conf"
 
 main()
 {
-	Logger.Initialize
 	Window.Initialize
 
 	# hanggang i-stop ung application, mag show lng
@@ -13,6 +12,7 @@ main()
 	done
 
 	Window.Close
+	# Delete /var/tmp
 }
 
 main

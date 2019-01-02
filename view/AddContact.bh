@@ -2,6 +2,16 @@
 
 AddContact_LAYOUT="${L}/add_contact.bl"
 
+this.set()
+{
+    FN=; MN=; LN=; SX=; PN=; EA=; AD=; CT=; ZP=;
+}
+
+this.unset()
+{
+    unset FN MN LN SX PN EA AD CT ZP
+}
+
 this.showDefault()
 {
     cat "$AddContact_LAYOUT"
@@ -105,7 +115,7 @@ this.readEmail()
             echo "Invalid Email Address..."; continue
         fi
 
-        if echo "$EA" | grep -Eqiw '^([a-z0-9_.#!$%&+/=*^{}|~-]+@[a-z0-9]+[a-z0-9-][a-z0-9]+[.][a-z.]+)$'; then
+        if echo "$EA" | grep -Eqiw '^([a-z0-9_.#!$%&+/=*^{}|~-]+@([a-z0-9]+|[a-z0-9]+[a-z0-9-][a-z0-9]+)[.][a-z.]+)$'; then
             break
         fi
         echo "Invalid Email Address..."
@@ -133,6 +143,7 @@ this.readLocation()
 
 AddContact.Show()
 {
+    this.set
     this.showDefault
     this.showMessage
     this.readName
@@ -144,7 +155,9 @@ AddContact.Show()
     # pagdating dito, valid na lahat
     addContact "$FN" "$MN" "$LN" "$SX" "$PN" "$EA" "$AD" "$CT" "$ZP"
 
-    while [ $APPSTATE -eq $AppState_ADD ]; do
-        read -s -n1 KEY
-    done
+    # while [ $APPSTATE -eq $AppState_ADD ]; do
+    #     read -s -n1 KEY
+    # done
+    Menu.PressKeyToMenu
+    this.unset
 }

@@ -1,8 +1,0 @@
-#!/bin/bash
-
-Logger.Initialize()
-{
-    # Replace contents of log file every program start
-    touch "$LOGFILE"
-    echo -n > "$LOGFILE"
-}
