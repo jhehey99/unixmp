@@ -1,0 +1,36 @@
+#!/bin/bash
+
+this.set()
+{
+    ID=; IDS=;
+    TOVIEW=( $Con_ID $Con_FN $Con_LN )
+}
+
+this.unset()
+{
+    unset ID IDS TOVIEW
+}
+
+DeleteContact.Show()
+{
+    this.set
+
+    # Get list of IDs, space separated to, hindi array
+    IDS=$(viewContact $Con_ID)
+    echo $IDS
+
+    # read ID
+    # viewContact ${TOVIEW[*]}
+    echo -n "Enter ID of Contact to delete: "
+    read ID
+
+    # check if ID is integer
+
+    # check if ID is in the list to ensure na ung dinedelete na id is valid
+
+    # saka i-delete
+    deleteContact "$ID"
+
+    Menu.PressKeyToMenu
+    this.unset
+}

@@ -1,0 +1,61 @@
+#!/bin/bash
+
+Window_DEFWIDTH=80
+Window_DEFHEIGHT=24
+
+Window_WIDTH=120
+Window_HEIGHT=40
+
+Window_VIEWWIDTH=140
+
+# Source all files in views
+# for VIEW in $(ls "$V"); do
+#     source "$VIEW"
+# done
+this_TAG="Window"
+
+Window.Initialize()
+{
+    # resize ung terminal window size
+    resize -s $Window_HEIGHT $Window_WIDTH > /dev/null
+    stty rows $Window_HEIGHT
+    stty cols $Window_WIDTH
+    clear
+    log "Window - Initialized..."
+
+    # init natin dito lahat ng views
+}
+
+Window.Show()
+{
+    clear
+    case $APPSTATE in
+        $AppState_MENU)
+            Menu.Show;;
+        $AppState_ADD)
+            AddContact.Show;;
+        $AppState_EDIT)
+            EditContact.Show;;
+        $AppState_DELETE)
+            DeleteContact.Show;;
+        $AppState_VIEW)
+            resize -s $Window_HEIGHT $Window_VIEWWIDTH > /dev/null
+            stty cols $Window_VIEWWIDTH
+            ViewContact.Show;;
+        $AppState_LOAD)
+            LoadContact.Show;;
+        *)
+            # log invalid app state, tas stop ung program
+            log "Invalid App State (${APPSTATE}...)"
+            APPSTATUS=$Status_INVSTATE
+            APPSTATE=$AppState_STOP
+    esac
+}
+
+Window.Close()
+{
+    # balik na sa default ung window size nung terminal
+    resize -s $Window_DEFHEIGHT $Window_DEFWIDTH > /dev/null
+    stty sane
+    log "Window - Closed..."
+}

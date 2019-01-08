@@ -1,0 +1,8 @@
+#!/bin/bash
+
+
+EditContact.Show()
+{
+    echo "Edit Contact"
+    Menu.PressKeyToMenu
+}

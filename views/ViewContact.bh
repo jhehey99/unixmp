@@ -1,0 +1,111 @@
+#!/bin/bash
+
+# shopt -s expand_aliases
+
+
+
+this.set()
+{
+    export TMPCOLLIPS="${TMP}/tmp_collips.txt"
+    TMPVIEW1="${TMP}/tmp_view1.txt"
+    TMPVIEW2="${TMP}/tmp_view2.txt"
+    TMPVIEW3="${TMP}/tmp_view3.txt"
+    LINESTART=1
+    LINEEND=30
+    NLINE=30
+
+    touch "$TMPCOLLIPS"
+    touch "$TMPVIEW1"
+    touch "$TMPVIEW2"
+    touch "$TMPVIEW3"
+}
+
+this.unset()
+{
+    rm "$TMPCOLLIPS"
+    rm "$TMPVIEW1"
+    rm "$TMPVIEW2"
+    rm "$TMPVIEW3"
+
+    unset TMPCOLLIPS TMPVIEW1 TMPVIEW2 TMPVIEW3
+    unset LINEEND NLINE
+}
+
+this.readKey()
+{
+    # reads 1 character only and silent mode
+    read -s -n1 KEY
+    case $KEY in
+        n)
+            if [ $LINEEND -le $LNUM ]; then
+                (( LINEEND += $NLINE ))
+                (( LINESTART += $NLINE ))
+            fi
+        ;;
+        b)
+            if [ $LINEEND -gt $NLINE ]; then
+                (( LINEEND -= $NLINE ))
+                (( LINESTART -= $NLINE ))
+            fi
+        ;;
+        q)
+            APPSTATE=$AppState_MENU
+        ;;
+    esac
+}
+
+ViewContact.Show()
+{
+    this.set
+
+    echo "ViewContact"
+
+    # echo ${Con_ALL[*]}
+    # echo "$ALL"
+
+    ALL=$(viewContact ${Con_ALL[*]})
+
+    LNUM=$(echo "$ALL" | wc -l)
+
+    echo "$ALL" | cut -f1 -d: > "$TMPVIEW1"
+
+    for i in $(seq 2 $Con_NUM); do
+
+        echo "$ALL" | cut -f"$i" -d: > "$TMPCOLLIPS"
+
+        # lagay sa 2
+        collips 20 > "$TMPVIEW2"
+
+        # paste 1 at 2, lagay sa 1
+        echo "$(paste "$TMPVIEW1" "$TMPVIEW2" -d:)" > "$TMPVIEW1"
+
+        # cat "$TMPVIEW1"
+        # cat "$TMPVIEW2"
+    done
+    HEADFIELD=$(head -1 "$TMPVIEW1")
+
+    # remove first line
+    sed -e '1d' -i "$TMPVIEW1"
+
+    # While nasa view contacts yung application
+    while [ $APPSTATE -eq $AppState_VIEW ]; do
+        clear
+
+        LINELAST=$LINEEND
+        if [ $LINEEND -gt $LNUM ]; then
+            (( LINELAST = $LNUM - 1 ))
+        fi
+
+        echo "$HEADFIELD" > "$TMPVIEW3"; echo >> "$TMPVIEW3"
+        (sed -n "${LINESTART},${LINELAST}p" < "$TMPVIEW1") >> "$TMPVIEW3"
+        cat "$TMPVIEW3" | column -t -s: -e
+        echo; echo "Showing line ${LINESTART}-${LINELAST} out of $((LNUM-1))"
+        # head -$LINEEND "$TMPVIEW1" | column -t -s:
+
+        this.readKey
+    done
+
+    Menu.PressKeyToMenu
+
+    this.unset
+}
