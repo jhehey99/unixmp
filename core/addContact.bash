@@ -18,7 +18,6 @@ NOW=$(date +"%F")
 shopt -s expand_aliases
 alias query='query.bash'
 
-NOW=$(date +"%F %T")
 SQL="INSERT INTO Contact(firstName, middleName, lastName, sex, phone, email, address, city, zipCode, dateAdded)
      VALUES ('${FN}', '${MN}', '${LN}', '${SX}', '${PN}', '${EA}', '${AD}', '${CT}', '${ZP}', '${NOW}');"
 

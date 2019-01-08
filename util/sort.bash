@@ -3,24 +3,6 @@
 
 FILE="$1"
 
-# if [ -p /dev/stdin ]; then
-#     read INPIPE
-#     echo "$INPIPE"
-# fi
-
-# Descending String Compare
-dscmp()
-{
-    S1="$1"
-    S2="$2"
-
-    if [[ "$S1" > "$S2" ]]; then
-        echo "$S1"
-    else
-        echo "$S2"
-    fi
-}
-
 # STRS=( $(cat "$FILE") )
 #
 # for STR in ${STRS[*]}; do
@@ -38,9 +20,6 @@ IDS=$(echo "$CONTENT" | cut -f1 -d":" | tr -d " ")
 
 STRS=$(echo "$CONTENT" | cut -f2 -d":")
 # echo "$STRS"
-# echo
-# echo
-# echo
 
 # ung STRS is ung field which is sorted
 # kailangan ng array na each line sa STRS is an element
