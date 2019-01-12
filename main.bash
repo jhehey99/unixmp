@@ -12,7 +12,6 @@ main()
 	done
 
 	Window.Close
-	# Delete /var/tmp
 }
 
 main

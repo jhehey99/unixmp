@@ -2,14 +2,16 @@
 
 # shopt -s expand_aliases
 
-
-
-this.set()
+viewContact.set()
 {
     export TMPCOLLIPS="${TMP}/tmp_collips.txt"
     TMPVIEW1="${TMP}/tmp_view1.txt"
     TMPVIEW2="${TMP}/tmp_view2.txt"
     TMPVIEW3="${TMP}/tmp_view3.txt"
+    TMPVIEW4="${TMP}/tmp_view4.txt"
+    TMPFIELD="${TMP}/tmp_field.txt"
+    # TMPFILE="../var/tmp/tmp_sort.txt"
+
     LINESTART=1
     LINEEND=30
     NLINE=30
@@ -18,20 +20,24 @@ this.set()
     touch "$TMPVIEW1"
     touch "$TMPVIEW2"
     touch "$TMPVIEW3"
+    touch "$TMPVIEW4"
+    touch "$TMPFIELD"
 }
 
-this.unset()
+viewContact.unset()
 {
     rm "$TMPCOLLIPS"
     rm "$TMPVIEW1"
     rm "$TMPVIEW2"
     rm "$TMPVIEW3"
+    rm "$TMPVIEW4"
+    rm "$TMPFIELD"
 
-    unset TMPCOLLIPS TMPVIEW1 TMPVIEW2 TMPVIEW3
+    unset TMPCOLLIPS TMPVIEW1 TMPVIEW2 TMPVIEW3 TMPFIELD
     unset LINEEND NLINE
 }
 
-this.readKey()
+viewContact.readKey()
 {
     # reads 1 character only and silent mode
     read -s -n1 KEY
@@ -56,21 +62,67 @@ this.readKey()
 
 ViewContact.Show()
 {
-    this.set
+    viewContact.set
 
     echo "ViewContact"
 
     # echo ${Con_ALL[*]}
     # echo "$ALL"
 
+    # 1 Contact per line
+    # echo $Con_DA
+    # echo ${Con_ALL[*]}
     ALL=$(viewContact ${Con_ALL[*]})
+    # echo "$ALL" | nl
+    # echo;echo;
 
+    # get total line number
     LNUM=$(echo "$ALL" | wc -l)
+    # echo "LNUM = $LNUM"
+
+    (( NFIELD=$LNUM-1 ))
+    # echo "NFIELD = $NFIELD"
+
+    HEADFIELD=$(echo "$ALL" | head -1 )
+    # echo "$HEADFIELD"
+    ALL=$(echo "$ALL" | tail -"$NFIELD")
+    # echo "$ALL"
+
+    # DITO UNG PAGPILI KUNG ANONG FIELD UNG ISOSORT (1-based)
+    # kunyare firstname
+    # echo "$ALL" | cut -f2 -d: > "$TMPFIELD"
+    # kunyare email
+    # echo "$ALL" | cut -f7 -d: > "$TMPFIELD"
+    # kunyare address
+    echo "$ALL" | cut -f8 -d: > "$TMPFIELD"
+    # kunyare city
+    # echo "$ALL" | cut -f9 -d: > "$TMPFIELD"
+
+    # perform sort on the fields and get sorted line numbers
+    SORTEDLINES=( $(sort.bash "$TMPFIELD") )
+    # echo ${SORTEDLINES[*]}
+
+    # for i in $(seq 0 $(($LNUM - 1)));do #$LNUM); do #$LNUM); do
+    #     # echo $i
+    #     # echo "$ALL" | head -"$i" | tail
+    #     # (( INDEX = $i + 1 ))
+    #     LINENUM=${SORTEDLINES[$i]}
+        # echo "$ALL" | sed "${SORTEDLINES[$i]}q;d"
+    #
+    #     # echo $LINENUM
+    #     # echo "$ALL" | sed "${LINENUM}q;d"
+    #     # echo "$ALL" | sed "${LINENUM}q;d"
+    #     # ALLSORTED[$i]="$(echo "$ALL" | sed "${SORTEDLINES[$i]}q;d")"
+    # done
+
+    #
+    # echo ${ALLSORTED[1]}
+    # echo ${ALLSORTED[0]}
 
     echo "$ALL" | cut -f1 -d: > "$TMPVIEW1"
-
     for i in $(seq 2 $Con_NUM); do
 
+        # ilagay sa TMPCOLLIPS file ung i-cocollips
         echo "$ALL" | cut -f"$i" -d: > "$TMPCOLLIPS"
 
         # lagay sa 2
@@ -82,12 +134,17 @@ ViewContact.Show()
         # cat "$TMPVIEW1"
         # cat "$TMPVIEW2"
     done
-    HEADFIELD=$(head -1 "$TMPVIEW1")
+    # HEADFIELD=$(head -1 "$TMPVIEW1")
+
+    echo -n > "$TMPVIEW4"
+    for i in $(seq 0 $(($LNUM - 1)));do #$LNUM); do #$LNUM); do
+         sed "${SORTEDLINES[$i]}q;d" "$TMPVIEW1" >> "$TMPVIEW4"
+    done
 
     # remove first line
-    sed -e '1d' -i "$TMPVIEW1"
+    # sed -e '1d' -i "$TMPVIEW1"
 
-    # While nasa view contacts yung application
+    # While nasa view contacts yung apAplication
     while [ $APPSTATE -eq $AppState_VIEW ]; do
         clear
 
@@ -97,15 +154,15 @@ ViewContact.Show()
         fi
 
         echo "$HEADFIELD" > "$TMPVIEW3"; echo >> "$TMPVIEW3"
-        (sed -n "${LINESTART},${LINELAST}p" < "$TMPVIEW1") >> "$TMPVIEW3"
+        (sed -n "${LINESTART},${LINELAST}p" < "$TMPVIEW4") >> "$TMPVIEW3"
         cat "$TMPVIEW3" | column -t -s: -e
         echo; echo "Showing line ${LINESTART}-${LINELAST} out of $((LNUM-1))"
         # head -$LINEEND "$TMPVIEW1" | column -t -s:
 
-        this.readKey
+        viewContact.readKey
     done
 
-    Menu.PressKeyToMenu
+    Menu.AnyKey
 
-    this.unset
+    viewContact.unset
 }

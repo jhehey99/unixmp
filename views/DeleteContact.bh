@@ -1,19 +1,19 @@
 #!/bin/bash
 
-this.set()
+deleteContact.set()
 {
     ID=; IDS=;
     TOVIEW=( $Con_ID $Con_FN $Con_LN )
 }
 
-this.unset()
+deleteContact.unset()
 {
     unset ID IDS TOVIEW
 }
 
 DeleteContact.Show()
 {
-    this.set
+    deleteContact.set
 
     # Get list of IDs, space separated to, hindi array
     IDS=$(viewContact $Con_ID)
@@ -31,6 +31,6 @@ DeleteContact.Show()
     # saka i-delete
     deleteContact "$ID"
 
-    Menu.PressKeyToMenu
-    this.unset
+    Menu.AnyKey
+    deleteContact.unset
 }

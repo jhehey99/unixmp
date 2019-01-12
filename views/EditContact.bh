@@ -4,5 +4,5 @@
 EditContact.Show()
 {
     echo "Edit Contact"
-    Menu.PressKeyToMenu
+    Menu.AnyKey
 }

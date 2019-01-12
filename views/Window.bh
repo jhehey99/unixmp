@@ -12,7 +12,6 @@ Window_VIEWWIDTH=140
 # for VIEW in $(ls "$V"); do
 #     source "$VIEW"
 # done
-this_TAG="Window"
 
 Window.Initialize()
 {
@@ -31,6 +30,9 @@ Window.Show()
     clear
     case $APPSTATE in
         $AppState_MENU)
+            resize -s $Window_HEIGHT $Window_WIDTH > /dev/null
+            stty rows $Window_HEIGHT
+            stty cols $Window_WIDTH
             Menu.Show;;
         $AppState_ADD)
             AddContact.Show;;

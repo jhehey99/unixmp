@@ -10,7 +10,7 @@ TMPFILE="../var/tmp/tmp_sort.txt"
 # done
 
 # cat "$TMPFILE"
-sort.bash "$TMPFILE"
+./sort.bash "$TMPFILE"
 
 
 

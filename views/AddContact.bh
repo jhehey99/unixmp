@@ -1,29 +1,29 @@
 #!/bin/bash
 
-this.set()
+addContact.set()
 {
     AddContact_LAYOUT="${L}/add_contact.bl"
     FN=; MN=; LN=; SX=; PN=; EA=; AD=; CT=; ZP=;
 }
 
-this.unset()
+addContact.unset()
 {
     unset AddContact_LAYOUT
     unset FN MN LN SX PN EA AD CT ZP
 }
 
-this.showDefault()
+addContact.showDefault()
 {
     cat "$AddContact_LAYOUT"
 }
 
-this.showMessage()
+addContact.showMessage()
 {
     echo "Enter the following details"
     echo "Details marked with * are required"
 }
 
-this.isValidName()
+addContact.isValidName()
 {
     local NAME="$1"
     local MUSTNOTNULL="$2"
@@ -50,31 +50,31 @@ this.isValidName()
     return 0
 }
 
-this.readName()
+addContact.readName()
 {
     # First Name
     while echo -n "*First Name: " && read FN; do
-        if this.isValidName "$FN" true; then
+        if addContact.isValidName "$FN" true; then
             break
         fi
     done
 
     # Middle Name
     while echo -n "Middle Name: " && read MN; do
-        if this.isValidName "$MN" false; then
+        if addContact.isValidName "$MN" false; then
             break
         fi
     done
 
     # Last Name
     while echo -n "*Last Name: " && read LN; do
-        if this.isValidName "$LN" true; then
+        if addContact.isValidName "$LN" true; then
             break
         fi
     done
 }
 
-this.readSex()
+addContact.readSex()
 {
     while echo -n "*Sex [M/F]: " && read SX; do
 
@@ -92,7 +92,7 @@ this.readSex()
     done
 }
 
-this.readPhoneNumber()
+addContact.readPhoneNumber()
 {
     # Start with 9, followed by 9 digits
     while echo -n "Phone Number: +63" && read PN; do
@@ -103,7 +103,7 @@ this.readPhoneNumber()
     done
 }
 
-this.readEmail()
+addContact.readEmail()
 {
     local MAX=255
     # local-part@domain
@@ -122,7 +122,7 @@ this.readEmail()
     done
 }
 
-this.readLocation()
+addContact.readLocation()
 {
     echo -n "Address: ";    read AD
     echo -n "City: ";       read CT
@@ -143,14 +143,14 @@ this.readLocation()
 
 AddContact.Show()
 {
-    this.set
-    this.showDefault
-    this.showMessage
-    this.readName
-    this.readSex
-    this.readPhoneNumber
-    this.readEmail
-    this.readLocation
+    addContact.set
+    addContact.showDefault
+    addContact.showMessage
+    addContact.readName
+    addContact.readSex
+    addContact.readPhoneNumber
+    addContact.readEmail
+    addContact.readLocation
 
     # pagdating dito, valid na lahat
     addContact "$FN" "$MN" "$LN" "$SX" "$PN" "$EA" "$AD" "$CT" "$ZP"
@@ -158,6 +158,6 @@ AddContact.Show()
     # while [ $APPSTATE -eq $AppState_ADD ]; do
     #     read -s -n1 KEY
     # done
-    Menu.PressKeyToMenu
-    this.unset
+    Menu.AnyKey
+    addContact.unset
 }

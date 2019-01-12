@@ -15,7 +15,7 @@ CONTENT=$(cat "$FILE" | nl | tr "\t" ":")
 NLINE=$(( $( echo "$CONTENT" | wc -l)-1 ))
 # echo $NLINE
 
-IDS=$(echo "$CONTENT" | cut -f1 -d":" | tr -d " ")
+# IDS=$(echo "$CONTENT" | cut -f1 -d":" | tr -d " ")
 # echo "$IDS"
 
 STRS=$(echo "$CONTENT" | cut -f2 -d":")
@@ -24,19 +24,21 @@ STRS=$(echo "$CONTENT" | cut -f2 -d":")
 # ung STRS is ung field which is sorted
 # kailangan ng array na each line sa STRS is an element
 STARR=()
-IDARR=()
+LNARR=()
 for i in $(seq 0 $NLINE); do
     STARR[$i]=$(echo "$STRS" | head -$(($i+1)) | tail -1)
-    IDARR[$i]=$(echo "$IDS" | head -$(($i+1)) | tail -1)
+    # LNARR[$i]=$(echo "$IDS" | head -$(($i+1)) | tail -1)
+    (( LNARR[$i]=$i+1 ))
     # echo "${STARR[$i]}"
 done
 
+# echo "${LNARR[*]}"
 
 # echo ${#STARR[*]}
 
 # UnSorted
 # for i in $(seq 0 $NLINE); do
-#     echo "${IDARR[$i]} - ${STARR[$i]}"
+#     echo "${LNARR[$i]} - ${STARR[$i]}"
 # done
 
 # pinaka goal is makakuha ng array of sorted ids
@@ -44,33 +46,41 @@ done
 for i in $(seq 0 $(($NLINE-1))); do
     for j in $(seq $(($i+1)) $NLINE); do
         if [[ "${STARR[$i]}" > "${STARR[$j]}" ]]; then
-            # swap str
+            # swap content string
             STMP="${STARR[$i]}"
             STARR[$i]="${STARR[$j]}"
             STARR[$j]="$STMP"
 
-            # swap id
-            IDTMP="${IDARR[$i]}"
-            IDARR[$i]="${IDARR[$j]}"
-            IDARR[$j]="$IDTMP"
+            # swap line number
+            LNTMP="${LNARR[$i]}"
+            LNARR[$i]="${LNARR[$j]}"
+            LNARR[$j]="$LNTMP"
         fi
     done
 done
 
+# echo;
+# echo "${STARR[*]}"
+# echo
+# echo
+#
+# echo "${LNARR[*]}"
+
+
 # echo;echo;echo;echo
 # Sorted
-for i in $(seq 0 $NLINE); do
-    echo "${IDARR[$i]} - ${STARR[$i]}"
-done
-echo;echo;echo;echo
+# for i in $(seq 0 $NLINE); do
+#     echo "${LNARR[$i]}:${STARR[$i]}" | column -t -s:
+# done
+# echo;echo;echo;echo
+
+echo ${LNARR[*]}
 
 # echo "$CONTENT" | grep " 2:"
-# echo ${IDARR[*]}
-for ID in ${IDARR[*]}; do
-    echo "$CONTENT" | grep " ${ID}:"
-done
-
-
+# echo ${LNARR[*]}
+# for ID in ${LNARR[*]}; do
+#     echo "$CONTENT" | grep " ${ID}:"
+# done
 
 # echo $NLINE
 # echo ${#STARR[*]}

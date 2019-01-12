@@ -4,6 +4,5 @@
 LoadContact.Show()
 {
     echo "Load Contact"
-    Menu.PressKeyToMenu
-    
+    Menu.AnyKey
 }

@@ -4,17 +4,17 @@
 Menu_LAYOUTINIT="${L}/menu.bl.init"
 Menu_LAYOUT="${L}/menu.bl"
 
-this.quit()
+menu.quit()
 {
     APPSTATE=$AppState_STOP
 }
 
-this.showDefault()
+menu.showDefault()
 {
     cat "$Menu_LAYOUT"
 }
 
-this.init()
+menu.init()
 {
     # dapat same ung menu.bl at menu.bl.init
     if ! diff "$Menu_LAYOUT" "$Menu_LAYOUTINIT"; then
@@ -24,7 +24,7 @@ this.init()
     log "Menu - Initialized..."
 }
 
-this.showMenuItem()
+menu.showMenuItem()
 {
     case $MENUSTATE in
         $MenuState_ADD)
@@ -38,19 +38,19 @@ this.showMenuItem()
         $MenuState_LOAD)
             APPSTATE=$AppState_LOAD;;
         $MenuState_QUIT)
-            this.quit;;
+            menu.quit;;
         *)
             log "Menu - showMenuItem() - Invalid Menu State...";;
     esac
 }
 
-this.readKey()
+menu.readKey()
 {
     # reads 1 character only and silent mode
     read -s -n1 KEY
     case $KEY in
         [qQ]) # From menu, press q to quit
-            this.quit
+            menu.quit
         ;;
         [wW]) # Up
             if [ $MENUSTATE -gt $(( $MenuState_NULL + 1 )) ]; then
@@ -63,22 +63,22 @@ this.readKey()
             fi
         ;;
         "") # Enter
-            this.showMenuItem
+            menu.showMenuItem
             # echo "You Entered ${MENUSTATE}"
         ;;
         *)
-            log "Menu - this.readKey() - Invalid Key..."
+            log "Menu - menu.readKey() - Invalid Key..."
         ;;
     esac
 }
 
-this.update()
+menu.update()
 {
     clear
 
     # pag 0, walang selected, so ung default lng.
     if [ $MENUSTATE -eq 0 ]; then
-        this.showDefault
+        menu.showDefault
         return 0
     fi
 
@@ -100,17 +100,17 @@ this.update()
 Menu.Show()
 {
     # eto ung display
-    this.init
-    this.showDefault
+    menu.init
+    menu.showDefault
 
     # While nasa menu yung application
     while [ $APPSTATE -eq $AppState_MENU ]; do
-        this.readKey
-        this.update
+        menu.readKey
+        menu.update
     done
 }
 
-Menu.PressKeyToMenu()
+Menu.AnyKey()
 {
     echo -n "Press any key to go back to menu..."
     read -s -n1
