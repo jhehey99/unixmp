@@ -3,10 +3,10 @@
 Window_DEFWIDTH=80
 Window_DEFHEIGHT=24
 
-Window_WIDTH=120
-Window_HEIGHT=40
+Window_WIDTH=98
+Window_HEIGHT=36
 
-Window_VIEWWIDTH=140
+Window_VIEWWIDTH=160
 
 # Source all files in views
 # for VIEW in $(ls "$V"); do

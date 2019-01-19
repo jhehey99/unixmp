@@ -6,7 +6,8 @@
 if [ -f "$LOGFILE" ]; then
     # TODO - ADD date and time of log
     # "[DATETIME]:MSG"
-    echo "$1" >> $LOGFILE
+    DATETIME=$(date +"%D : %r")
+    echo "[$DATETIME] | $1" >> $LOGFILE
 fi
 
 exit 0

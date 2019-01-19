@@ -15,16 +15,13 @@ ZP="$9"
 # Date now
 NOW=$(date +"%F")
 
-shopt -s expand_aliases
-alias query='query.bash'
-
 SQL="INSERT INTO Contact(firstName, middleName, lastName, sex, phone, email, address, city, zipCode, dateAdded)
      VALUES ('${FN}', '${MN}', '${LN}', '${SX}', '${PN}', '${EA}', '${AD}', '${CT}', '${ZP}', '${NOW}');"
 
-if query "$SQL"; then
-    echo "Insert Contact Success..."
+if query.bash "$SQL"; then
+    echo "Add Contact Success..."
     exit 0
 fi
 
-echo "Insert Contact Failed..."
+echo "Add Contact Failed..."
 exit 1

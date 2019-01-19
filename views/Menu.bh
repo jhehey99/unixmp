@@ -11,7 +11,8 @@ menu.quit()
 
 menu.showDefault()
 {
-    cat "$Menu_LAYOUT"
+    toilet -w 98 --gay " Address Book"
+    cat "$Menu_LAYOUT" | tr "." " "
 }
 
 menu.init()
@@ -75,12 +76,13 @@ menu.readKey()
 menu.update()
 {
     clear
-
     # pag 0, walang selected, so ung default lng.
     if [ $MENUSTATE -eq 0 ]; then
         menu.showDefault
         return 0
     fi
+
+    toilet -w 100 --gay " Address Book"
 
     # update ung display nung Menu
     local CHAR="~"        # to indicate na selected
@@ -91,9 +93,9 @@ menu.update()
     local LINETOTAL=$(cat "$Menu_LAYOUT" | wc -l)
     local TAILER=$(( $LINETOTAL - $LINEEND ))
 
-    head -$HEADER "$Menu_LAYOUT"
-    head -$LINEEND "$Menu_LAYOUT" | tail -$LINEHEIGHT | tr " " $CHAR
-    tail -$TAILER "$Menu_LAYOUT"
+    head -$HEADER "$Menu_LAYOUT" | tr "." " "
+    head -$LINEEND "$Menu_LAYOUT" | tail -$LINEHEIGHT | tr " " $CHAR | tr "." " "
+    tail -$TAILER "$Menu_LAYOUT" | tr "." " "
     # echo "APPSTATE = ${APPSTATE} || MENUSTATE = ${MENUSTATE}"
 }
 

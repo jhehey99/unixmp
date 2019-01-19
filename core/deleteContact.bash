@@ -11,5 +11,4 @@ fi
 
 echo "Delete Contact Success..."
 
-
 exit 0

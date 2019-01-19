@@ -15,6 +15,10 @@ viewContact.set()
     LINESTART=1
     LINEEND=30
     NLINE=30
+    SFLD=1
+    TOUPDATE=true
+    ORDER=a
+    ORDERSTR="Ascending"
 
     touch "$TMPCOLLIPS"
     touch "$TMPVIEW1"
@@ -39,6 +43,7 @@ viewContact.unset()
 
 viewContact.readKey()
 {
+    TOUPDATE=false
     # reads 1 character only and silent mode
     read -s -n1 KEY
     case $KEY in
@@ -57,6 +62,46 @@ viewContact.readKey()
         q)
             APPSTATE=$AppState_MENU
         ;;
+        [1-9])
+            SFLD=$KEY
+            TOUPDATE=true
+        ;;
+        0)
+            SFLD=10
+            TOUPDATE=true
+        ;;
+        -)
+            SFLD=11
+            TOUPDATE=true
+        ;;
+        '`')
+            TOUPDATE=true
+            if [ "$ORDER" = a ]; then
+                ORDER=d
+                ORDERSTR="Descending"
+            elif [ "$ORDER" = d ]; then
+                ORDER=a
+                ORDERSTR="Ascending"
+            fi
+        ;;
+        h)
+            clear
+            toilet --gay "HELP"
+            local CHARS=( 1 2 3 4 5 6 7 8 9 0 '-')
+            echo -ne "\t"
+            echo '` => Reverse Sorting Order (Ascending/Descending)'
+            for (( i=0; i<$Con_NUM; i++)); do
+                echo -e "\t${CHARS[$i]} => Sort by ${Con_ALL[$i]}"
+            done
+            echo -e "\tb => Go Back To Previous Page"
+            echo -e "\tn => Go To Next Page"
+            echo -e "\tq => Quit"
+            while read -s -n1 KEY; do
+                if [ "$KEY" = "q" ]; then
+                    break
+                fi
+            done
+        ;;
     esac
 }
 
@@ -66,88 +111,62 @@ ViewContact.Show()
 
     echo "ViewContact"
 
-    # echo ${Con_ALL[*]}
-    # echo "$ALL"
-
     # 1 Contact per line
-    # echo $Con_DA
-    # echo ${Con_ALL[*]}
+
+    # While nasa view contacts yung apAplication
+
     ALL=$(viewContact ${Con_ALL[*]})
-    # echo "$ALL" | nl
-    # echo;echo;
 
     # get total line number
     LNUM=$(echo "$ALL" | wc -l)
-    # echo "LNUM = $LNUM"
 
     (( NFIELD=$LNUM-1 ))
-    # echo "NFIELD = $NFIELD"
 
     HEADFIELD=$(echo "$ALL" | head -1 )
-    # echo "$HEADFIELD"
     ALL=$(echo "$ALL" | tail -"$NFIELD")
-    # echo "$ALL"
 
-    # DITO UNG PAGPILI KUNG ANONG FIELD UNG ISOSORT (1-based)
-    # kunyare firstname
-    # echo "$ALL" | cut -f2 -d: > "$TMPFIELD"
-    # kunyare email
-    # echo "$ALL" | cut -f7 -d: > "$TMPFIELD"
-    # kunyare address
-    echo "$ALL" | cut -f8 -d: > "$TMPFIELD"
-    # kunyare city
-    # echo "$ALL" | cut -f9 -d: > "$TMPFIELD"
-
-    # perform sort on the fields and get sorted line numbers
-    SORTEDLINES=( $(sort.bash "$TMPFIELD") )
-    # echo ${SORTEDLINES[*]}
-
-    # for i in $(seq 0 $(($LNUM - 1)));do #$LNUM); do #$LNUM); do
-    #     # echo $i
-    #     # echo "$ALL" | head -"$i" | tail
-    #     # (( INDEX = $i + 1 ))
-    #     LINENUM=${SORTEDLINES[$i]}
-        # echo "$ALL" | sed "${SORTEDLINES[$i]}q;d"
-    #
-    #     # echo $LINENUM
-    #     # echo "$ALL" | sed "${LINENUM}q;d"
-    #     # echo "$ALL" | sed "${LINENUM}q;d"
-    #     # ALLSORTED[$i]="$(echo "$ALL" | sed "${SORTEDLINES[$i]}q;d")"
-    # done
-
-    #
-    # echo ${ALLSORTED[1]}
-    # echo ${ALLSORTED[0]}
-
-    echo "$ALL" | cut -f1 -d: > "$TMPVIEW1"
-    for i in $(seq 2 $Con_NUM); do
-
-        # ilagay sa TMPCOLLIPS file ung i-cocollips
-        echo "$ALL" | cut -f"$i" -d: > "$TMPCOLLIPS"
-
-        # lagay sa 2
-        collips 20 > "$TMPVIEW2"
-
-        # paste 1 at 2, lagay sa 1
-        echo "$(paste "$TMPVIEW1" "$TMPVIEW2" -d:)" > "$TMPVIEW1"
-
-        # cat "$TMPVIEW1"
-        # cat "$TMPVIEW2"
-    done
-    # HEADFIELD=$(head -1 "$TMPVIEW1")
-
-    echo -n > "$TMPVIEW4"
-    for i in $(seq 0 $(($LNUM - 1)));do #$LNUM); do #$LNUM); do
-         sed "${SORTEDLINES[$i]}q;d" "$TMPVIEW1" >> "$TMPVIEW4"
-    done
-
-    # remove first line
-    # sed -e '1d' -i "$TMPVIEW1"
-
-    # While nasa view contacts yung apAplication
     while [ $APPSTATE -eq $AppState_VIEW ]; do
         clear
 
+        # DITO UNG PAGPILI KUNG ANONG FIELD UNG ISOSORT (1-based)
+        # kunyare firstname
+        # echo "$ALL" | cut -f2 -d: > "$TMPFIELD"
+        # kunyare email
+        # echo "$ALL" | cut -f7 -d: > "$TMPFIELD"
+        # kunyare address
+        # echo "$ALL" | cut -f8 -d: > "$TMPFIELD"
+        # kunyare city
+        # echo "$ALL" | cut -f9 -d: > "$TMPFIELD"
+
+        if $TOUPDATE; then
+
+            # perform sort on the fields and get sorted line numbers
+            echo "$ALL" | cut -f"$SFLD" -d: > "$TMPFIELD"
+            SORTEDLINES=( $(sort.bash "$TMPFIELD" "$ORDER") )
+
+            # dito pinapa-iksi ung mahahaba
+            echo "$ALL" | cut -f1 -d: > "$TMPVIEW1"
+            for i in $(seq 2 $Con_NUM); do
+
+                # ilagay sa TMPCOLLIPS file ung i-cocollips
+                echo "$ALL" | cut -f"$i" -d: > "$TMPCOLLIPS"
+
+                # lagay sa 2
+                collips 20 > "$TMPVIEW2"
+
+                # paste 1 at 2, lagay sa 1
+                echo "$(paste "$TMPVIEW1" "$TMPVIEW2" -d:)" > "$TMPVIEW1"
+
+            done
+
+            # dito kinukuha ung sorted rows for the generated sorted lines
+            echo -n > "$TMPVIEW4"
+            for i in $(seq 0 $(($LNUM - 1)));do
+                 sed "${SORTEDLINES[$i]}q;d" "$TMPVIEW1" >> "$TMPVIEW4"
+            done
+        fi
+
+        # dito ung parang page bla bla
         LINELAST=$LINEEND
         if [ $LINEEND -gt $LNUM ]; then
             (( LINELAST = $LNUM - 1 ))
@@ -156,8 +175,10 @@ ViewContact.Show()
         echo "$HEADFIELD" > "$TMPVIEW3"; echo >> "$TMPVIEW3"
         (sed -n "${LINESTART},${LINELAST}p" < "$TMPVIEW4") >> "$TMPVIEW3"
         cat "$TMPVIEW3" | column -t -s: -e
-        echo; echo "Showing line ${LINESTART}-${LINELAST} out of $((LNUM-1))"
-        # head -$LINEEND "$TMPVIEW1" | column -t -s:
+
+        SORTEDFIELD=$(echo "$HEADFIELD" | cut -f"$SFLD" -d":")
+        echo; echo "Sorted $ORDERSTR by [$SORTEDFIELD]";
+        echo "Showing line ${LINESTART}-${LINELAST} out of $((LNUM-1))"
 
         viewContact.readKey
     done

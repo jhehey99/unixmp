@@ -3,6 +3,10 @@
 
 FILE="$1"
 
+# a - ascending, d - descending
+ORDER="$2"
+
+
 # STRS=( $(cat "$FILE") )
 #
 # for STR in ${STRS[*]}; do
@@ -43,19 +47,34 @@ done
 
 # pinaka goal is makakuha ng array of sorted ids
 # Sort
+
+sortSwap()
+{
+    # swap content string
+    STMP="${STARR[$i]}"
+    STARR[$i]="${STARR[$j]}"
+    STARR[$j]="$STMP"
+
+    # swap line number
+    LNTMP="${LNARR[$i]}"
+    LNARR[$i]="${LNARR[$j]}"
+    LNARR[$j]="$LNTMP"
+}
+
 for i in $(seq 0 $(($NLINE-1))); do
     for j in $(seq $(($i+1)) $NLINE); do
-        if [[ "${STARR[$i]}" > "${STARR[$j]}" ]]; then
-            # swap content string
-            STMP="${STARR[$i]}"
-            STARR[$i]="${STARR[$j]}"
-            STARR[$j]="$STMP"
-
-            # swap line number
-            LNTMP="${LNARR[$i]}"
-            LNARR[$i]="${LNARR[$j]}"
-            LNARR[$j]="$LNTMP"
-        fi
+        case "$ORDER" in
+            a)
+                if [[ "${STARR[$i]}" > "${STARR[$j]}" ]]; then
+                    sortSwap
+                fi
+            ;;
+            d)
+                if [[ "${STARR[$i]}" < "${STARR[$j]}" ]]; then
+                    sortSwap
+                fi
+            ;;
+        esac
     done
 done
 

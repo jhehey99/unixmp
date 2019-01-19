@@ -1,2 +1,3 @@
 apt install xterm -y
 apt install mariadb-server -y
+apt install toilet -y
