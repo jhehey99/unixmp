@@ -2,19 +2,19 @@
 
 addContact.set()
 {
-    AddContact_LAYOUT="${L}/add_contact.bl"
+    LAYOUT="${L}/add_contact.bl"
     FN=; MN=; LN=; SX=; PN=; EA=; AD=; CT=; ZP=;
 }
 
 addContact.unset()
 {
-    unset AddContact_LAYOUT
+    unset LAYOUT
     unset FN MN LN SX PN EA AD CT ZP
 }
 
 addContact.showDefault()
 {
-    cat "$AddContact_LAYOUT"
+    cat "$LAYOUT"
 }
 
 addContact.showMessage()
@@ -31,19 +31,19 @@ addContact.isValidName()
 
     # check if can be null and is null
     if [[ "$MUSTNOTNULL" = true && -z "$NAME" ]]; then
-        echo "This detail is required..."
+        log "This detail is required..."
         return 1
     fi
 
     # check if greater than $MAX characters
     if [ ${#NAME} -gt $MAX ]; then
-        echo "Must not exceed $MAX characters..."
+        log "Must not exceed $MAX characters..."
         return 1
     fi
 
     # check if contains non-alpha characters
     if echo "$NAME" | grep -iq [^a-z]; then
-        echo "Must only consist of alpha characters..."
+        log "Must only consist of alpha characters..."
         return 1
     fi
 
@@ -80,7 +80,7 @@ addContact.readSex()
 
         # Not Empty
         if [ -z "$SX" ]; then
-            echo "This detail is required..."; continue
+            log "This detail is required..."; continue
         fi
 
         # Male or Female lng
@@ -88,7 +88,7 @@ addContact.readSex()
             [mMfF])
                 break ;;
         esac
-        echo "[M/F] Only..."
+        log "[M/F] Only..."
     done
 }
 
@@ -99,7 +99,7 @@ addContact.readPhoneNumber()
         if echo "$PN" | grep -qE "^9[0-9]{9}$"; then
             break
         fi
-        echo "Invalid Phone Number..."
+        log "Invalid Phone Number..."
     done
 }
 
@@ -112,13 +112,13 @@ addContact.readEmail()
     while echo -n "Email Address: " && read EA; do
         # check if greater than MAX # of characters
         if [ ${#EA} -gt $MAX ]; then
-            echo "Invalid Email Address..."; continue
+            log "Invalid Email Address..."; continue
         fi
 
         if echo "$EA" | grep -Eqiw '^([a-z0-9_.#!$%&+/=*^{}|~-]+@([a-z0-9]+|[a-z0-9]+[a-z0-9-][a-z0-9]+)[.][a-z.]+)$'; then
             break
         fi
-        echo "Invalid Email Address..."
+        log "Invalid Email Address..."
     done
 }
 
@@ -137,12 +137,13 @@ addContact.readLocation()
         if echo "$ZP" | grep -Eq '^[0-9]{4}$'; then
             break
         fi
-        echo "Invalid Zip Code..."
+        log "Invalid Zip Code..."
     done
 }
 
 AddContact.Show()
 {
+    log -q "App in AddContact..."
     addContact.set
     addContact.showDefault
     addContact.showMessage

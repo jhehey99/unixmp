@@ -3,11 +3,32 @@
 # Usage : log "string"
 # File  : */mp/etc/.logs
 
-if [ -f "$LOGFILE" ]; then
-    # TODO - ADD date and time of log
-    # "[DATETIME]:MSG"
-    DATETIME=$(date +"%D : %r")
-    echo "[$DATETIME] | $1" >> $LOGFILE
+if [ $# -eq 2 ]; then
+    OPT="$1"
+    STR="$2"
+else
+    STR="$1"
 fi
+
+DATETIME=$(date +"%D : %r")
+LOGSTR="[$DATETIME] | $STR"
+
+writeLog()
+{
+    if [ -f "$LOGFILE" ]; then
+        echo "$LOGSTR" >> $LOGFILE
+    fi
+}
+
+# default is i-lo-log, then i-echo din.
+case "$OPT" in
+    -q)
+        writeLog
+    ;;
+    *)
+        writeLog
+        echo "$STR"
+    ;;
+esac
 
 exit 0

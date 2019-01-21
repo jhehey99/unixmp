@@ -102,6 +102,8 @@ menu.update()
 Menu.Show()
 {
     # eto ung display
+    log -q "App in Menu..."
+
     menu.init
     menu.showDefault
 

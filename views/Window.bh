@@ -8,11 +8,6 @@ Window_HEIGHT=36
 
 Window_VIEWWIDTH=160
 
-# Source all files in views
-# for VIEW in $(ls "$V"); do
-#     source "$VIEW"
-# done
-
 Window.Initialize()
 {
     # resize ung terminal window size
@@ -20,7 +15,7 @@ Window.Initialize()
     stty rows $Window_HEIGHT
     stty cols $Window_WIDTH
     clear
-    log "Window - Initialized..."
+    log -q "Window - Initialized..."
 
     # init natin dito lahat ng views
 }
@@ -48,7 +43,7 @@ Window.Show()
             LoadContact.Show;;
         *)
             # log invalid app state, tas stop ung program
-            log "Invalid App State (${APPSTATE}...)"
+            log -q "Invalid App State (${APPSTATE}...)"
             APPSTATUS=$Status_INVSTATE
             APPSTATE=$AppState_STOP
     esac
@@ -59,5 +54,5 @@ Window.Close()
     # balik na sa default ung window size nung terminal
     resize -s $Window_DEFHEIGHT $Window_DEFWIDTH > /dev/null
     stty sane
-    log "Window - Closed..."
+    log -q "Window - Closed..."
 }

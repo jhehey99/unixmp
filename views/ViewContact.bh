@@ -19,6 +19,7 @@ viewContact.set()
     TOUPDATE=true
     ORDER=a
     ORDERSTR="Ascending"
+    TOCOLLIPS=true
 
     touch "$TMPCOLLIPS"
     touch "$TMPVIEW1"
@@ -84,6 +85,15 @@ viewContact.readKey()
                 ORDERSTR="Ascending"
             fi
         ;;
+        v)
+            TOUPDATE=true
+            if "$TOCOLLIPS"; then
+                TOCOLLIPS=false
+            else
+                TOCOLLIPS=true
+            fi
+            echo "TOCOLLIPS = $TOCOLLIPS"
+        ;;
         h)
             clear
             toilet --gay "HELP"
@@ -93,6 +103,7 @@ viewContact.readKey()
             for (( i=0; i<$Con_NUM; i++)); do
                 echo -e "\t${CHARS[$i]} => Sort by ${Con_ALL[$i]}"
             done
+            echo -e "\tv => Toggle Collapse/Uncollapse Fields"
             echo -e "\tb => Go Back To Previous Page"
             echo -e "\tn => Go To Next Page"
             echo -e "\tq => Quit"
@@ -107,6 +118,8 @@ viewContact.readKey()
 
 ViewContact.Show()
 {
+    log -q "App in ViewContact..."
+
     viewContact.set
 
     echo "ViewContact"
@@ -116,7 +129,7 @@ ViewContact.Show()
     # While nasa view contacts yung apAplication
 
     ALL=$(viewContact ${Con_ALL[*]})
-
+    echo "$ALL"
     # get total line number
     LNUM=$(echo "$ALL" | wc -l)
 
@@ -145,19 +158,22 @@ ViewContact.Show()
             SORTEDLINES=( $(sort.bash "$TMPFIELD" "$ORDER") )
 
             # dito pinapa-iksi ung mahahaba
-            echo "$ALL" | cut -f1 -d: > "$TMPVIEW1"
-            for i in $(seq 2 $Con_NUM); do
+            if $TOCOLLIPS; then
+                echo "$ALL" | cut -f1 -d: > "$TMPVIEW1"
+                for i in $(seq 2 $Con_NUM); do
 
-                # ilagay sa TMPCOLLIPS file ung i-cocollips
-                echo "$ALL" | cut -f"$i" -d: > "$TMPCOLLIPS"
+                    # ilagay sa TMPCOLLIPS file ung i-cocollips
+                    echo "$ALL" | cut -f"$i" -d: > "$TMPCOLLIPS"
 
-                # lagay sa 2
-                collips 20 > "$TMPVIEW2"
+                    # lagay sa 2
+                    collips 16 > "$TMPVIEW2"
 
-                # paste 1 at 2, lagay sa 1
-                echo "$(paste "$TMPVIEW1" "$TMPVIEW2" -d:)" > "$TMPVIEW1"
-
-            done
+                    # paste 1 at 2, lagay sa 1
+                    echo "$(paste "$TMPVIEW1" "$TMPVIEW2" -d:)" > "$TMPVIEW1"
+                done
+            else
+                echo "$ALL" > "$TMPVIEW1"
+            fi
 
             # dito kinukuha ung sorted rows for the generated sorted lines
             echo -n > "$TMPVIEW4"

@@ -13,6 +13,7 @@ deleteContact.unset()
 
 DeleteContact.Show()
 {
+    log -q "App in DeleteContact..."
     deleteContact.set
 
     # Get list of IDs, space separated to, hindi array

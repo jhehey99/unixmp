@@ -1,5 +1,8 @@
 #!/bin/bash
 
+shopt -s expand_aliases
+alias log="$PWD/util/log.bash"
+
 echo "HELLO - ADD CONTACT"
 
 FN="$1"
@@ -19,9 +22,9 @@ SQL="INSERT INTO Contact(firstName, middleName, lastName, sex, phone, email, add
      VALUES ('${FN}', '${MN}', '${LN}', '${SX}', '${PN}', '${EA}', '${AD}', '${CT}', '${ZP}', '${NOW}');"
 
 if query.bash "$SQL"; then
-    echo "Add Contact Success..."
+    log "Add Contact Success..."
     exit 0
 fi
 
-echo "Add Contact Failed..."
+log "Add Contact Failed..."
 exit 1
