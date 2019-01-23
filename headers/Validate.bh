@@ -1,0 +1,98 @@
+#!/bin/bash
+
+VALIDATION=(
+    "validate.isNameValid"      # First Name
+    "validate.isNameValid"      # Middle Name
+    "validate.isNameValid"      # Last Name
+    "validate.isSexValid"       # Sex
+    "validate.isPhoneValid"     # Phone Number
+    "validate.isEmailValid"     # Email Address
+    "validate.isValidAddress"   # Address
+    "validate.isValidCity"      # City
+    "validate.isValidZipCode"   # Zip Code
+)
+
+validate.doesExceedMax()
+{
+    if [ $1 -gt $2 ]; then
+        VERRMSG="This field must not exceed $MAX characters..."
+        log -q "$VERRMSG"
+        return 1
+    fi
+    return 0
+}
+
+validate.isNameValid()
+{
+    validate.doesExceedMax ${#1} 50; [ $? -eq 1 ] && return 1
+
+    # check if contains non-alpha characters
+    if echo "$1" | grep -iq "[^a-z[:space:]]"; then
+        VERRMSG="This field must only consist of alpha characters..."
+        log -q "$VERRMSG"
+        return 1
+    fi
+
+    return 0
+}
+
+validate.isSexValid()
+{
+    case "$1" in
+        *[^mMfFnN]*)
+            VERRMSG="This field must be [M/F/N] only..."
+            log -q "$VERRMSG"
+            return 1;;
+    esac
+    return 0
+}
+
+validate.isPhoneValid()
+{
+    # Dapat exactly 9 digits
+    if echo "$1" | grep -qE '^9[0-9]{9}$'; then
+        return 0
+    fi
+
+    VERRMSG="Invalid Phone Number..."
+    log -q "$VERRMSG"
+    return 1
+}
+
+validate.isEmailValid()
+{
+    validate.doesExceedMax ${#1} 255; [ $? -eq 1 ] && return 1
+
+    # Valid condition
+    if echo "$1" | grep -Eqiw '^([a-z0-9_.#!$%&+/=*^{}|~-]+@([a-z0-9]+|[a-z0-9]+[a-z0-9-][a-z0-9]+)[.][a-z.]+)$'; then
+        return 0
+    fi
+
+    VERRMSG="Invalid Email Address..."
+    log -q "$VERRMSG"
+    return 1
+}
+
+validate.isValidAddress()
+{
+    validate.doesExceedMax ${#1} 255
+    return $?
+}
+
+validate.isValidCity()
+{
+    validate.doesExceedMax ${#1} 50
+    return $?
+}
+
+validate.isValidZipCode()
+{
+    # Dapat exactly 4 digits
+    if echo "$1" | grep -qE '^[0-9]{4}$'; then
+        return 0
+    fi
+
+    VERRMSG="Invalid Zip Code..."
+    log -q "$VERRMSG"
+    return 1
+}

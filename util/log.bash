@@ -16,7 +16,7 @@ LOGSTR="[$DATETIME] | $STR"
 writeLog()
 {
     if [ -f "$LOGFILE" ]; then
-        echo "$LOGSTR" >> $LOGFILE
+        echo -e "$LOGSTR" >> $LOGFILE
     fi
 }
 
@@ -27,7 +27,7 @@ case "$OPT" in
     ;;
     *)
         writeLog
-        echo "$STR"
+        echo -e "$STR"
     ;;
 esac
 

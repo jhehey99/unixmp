@@ -1,0 +1,250 @@
+#!/bin/bash
+
+# shopt -s expand_aliases
+
+viewContact.set()
+{
+    export TMPCOLLIPS="${TMP}/tmp_collips.txt"
+    TMPVIEW1="${TMP}/tmp_view1.txt"; TMPVIEW2="${TMP}/tmp_view2.txt"; TMPVIEW3="${TMP}/tmp_view3.txt"; TMPVIEW4="${TMP}/tmp_view4.txt"
+    TMPFIELD="${TMP}/tmp_field.txt"
+
+    HEADER="${L}/view_contact_header.bl"
+
+    NLINE=20
+    LINESTART=1
+    LINEEND=$NLINE
+    SFLD=1
+    TOUPDATE=true
+    ORDER=a
+    ORDERSTR="Ascending"
+
+    NCOL=14
+    TOCOLLIPS=true
+
+    VIEWSTATE=$ViewState_NULL
+
+    touch "$TMPCOLLIPS" "$TMPVIEW1" "$TMPVIEW2" "$TMPVIEW3" "$TMPVIEW4" "$TMPFIELD"
+
+    # para sa view state sa header
+    VCOLTMPS=( "${TMP}/tmp_vcolf"{1,2,3}".txt" )
+    for TMPFILE in ${VCOLTMPS[*]}; do
+        touch "$TMPFILE"
+    done
+
+    C1=1
+    C2=49
+    (( CDIFF = $C2 - $C1 ))
+    NVCOLTMPS=${#VCOLTMPS}
+}
+
+viewContact.unset()
+{
+    rm "$TMPCOLLIPS" "$TMPVIEW1" "$TMPVIEW2" "$TMPVIEW3" "$TMPVIEW4" "$TMPFIELD"
+
+    unset TMPCOLLIPS TMPVIEW1 TMPVIEW2 TMPVIEW3 TMPFIELD
+    unset LINEEND NLINE
+
+    for TMPFILE in ${VCOLTMPS[*]}; do
+        rm "$TMPFILE"
+    done
+    unset VCOLTMPS
+}
+
+viewContact.readKey()
+{
+    TOUPDATE=false
+    # reads 1 character only and silent mode
+    read -s -n1 KEY
+    case $KEY in
+        n)
+            if [ $LINEEND -le $LNUM ]; then
+                (( LINEEND += $NLINE ))
+                (( LINESTART += $NLINE ))
+            fi
+        ;;
+        b)
+            if [ $LINEEND -gt $NLINE ]; then
+                (( LINEEND -= $NLINE ))
+                (( LINESTART -= $NLINE ))
+            fi
+        ;;
+        a) # Left
+            if [ $VIEWSTATE -gt $(( $ViewState_NULL + 1)) ]; then
+                (( VIEWSTATE-= 1 ))
+            fi
+        ;;
+        d) # Right
+            if [ $VIEWSTATE -lt $(( $ViewState_NUM - 1 )) ]; then
+                (( VIEWSTATE+= 1 ))
+            fi
+        ;;
+        q)
+            APPSTATE=$AppState_MENU
+        ;;
+        [1-9])
+            SFLD=$KEY
+            TOUPDATE=true
+        ;;
+        0)
+            SFLD=10
+            TOUPDATE=true
+        ;;
+        -)
+            SFLD=11
+            TOUPDATE=true
+        ;;
+        '`')
+            TOUPDATE=true
+            if [ "$ORDER" = a ]; then
+                ORDER=d
+                ORDERSTR="Descending"
+            elif [ "$ORDER" = d ]; then
+                ORDER=a
+                ORDERSTR="Ascending"
+            fi
+        ;;
+        v)
+            TOUPDATE=true
+            if "$TOCOLLIPS"; then
+                TOCOLLIPS=false
+            else
+                TOCOLLIPS=true
+            fi
+            echo "TOCOLLIPS = $TOCOLLIPS"
+        ;;
+        h)
+            clear
+            toilet --gay "HELP"
+            local CHARS=( 1 2 3 4 5 6 7 8 9 0 '-')
+            echo -ne "\t"
+            echo '` => Reverse Sorting Order (Ascending/Descending)'
+            for (( i=0; i<$Con_NUM; i++)); do
+                echo -e "\t${CHARS[$i]} => Sort by ${Con_ALL[$i]}"
+            done
+            echo -e "\tv => Toggle Collapse/Uncollapse Fields"
+            echo -e "\tb => Go Back To Previous Page"
+            echo -e "\tn => Go To Next Page"
+            echo -e "\tq => Quit"
+            while read -s -n1 KEY; do
+                if [ "$KEY" = "q" ]; then
+                    break
+                fi
+            done
+        ;;
+    esac
+}
+
+viewContact.showHeader()
+{
+    for (( i=0; i < $((ViewState_NUM - 1)); i++)); do
+        (( CMUL = $CDIFF * $i ))
+        (( CSTART = $C1 + $CMUL + $i ))
+        (( CEND = $C2 + $CMUL + $i ))
+        cat "$HEADER" | cut -c "${CSTART}-${CEND}" > "${VCOLTMPS[$i]}"
+    done
+
+    if [ $VIEWSTATE -gt $ViewState_NULL -a $VIEWSTATE -lt $ViewState_NUM ]; then
+        local IDX=$(( $VIEWSTATE - 1))
+        local FTMP="${TMP}/tmp_ftmp.txt"
+        (cat ${VCOLTMPS[$IDX]} | tr " " "~") > "$FTMP"
+        mv "$FTMP" "${VCOLTMPS[$IDX]}"
+    fi
+
+    paste -d"\0" ${VCOLTMPS[*]}
+    echo
+}
+
+viewContact.initDataset()
+{
+    # retrieve the data from database
+    ALL=$(viewContact ${Con_ALL[*]})
+
+    # get total line number
+    LNUM=$(echo "$ALL" | wc -l)
+
+    (( NFIELD=$LNUM-1 ))
+    HEADFIELD=$(echo "$ALL" | head -1 )
+    ALL=$(echo "$ALL" | tail -"$NFIELD")
+
+}
+
+viewContact.sort()
+{
+    # perform sort on the fields and get sorted line numbers
+    echo "$ALL" | cut -f"$SFLD" -d: > "$TMPFIELD"
+    SORTEDLINES=( $(sort.bash "$TMPFIELD" "$ORDER") )
+}
+
+viewContact.collapse()
+{
+    # dito pinapa-iksi ung mahahaba
+    if $TOCOLLIPS; then
+        echo "$ALL" | cut -f1 -d: > "$TMPVIEW1"
+        for i in $(seq 2 $Con_NUM); do
+
+            # ilagay sa TMPCOLLIPS file ung i-cocollips
+            echo "$ALL" | cut -f"$i" -d: > "$TMPCOLLIPS"
+
+            # lagay sa 2
+            collips $NCOL > "$TMPVIEW2"
+
+            # paste 1 at 2, lagay sa 1
+            echo "$(paste "$TMPVIEW1" "$TMPVIEW2" -d:)" > "$TMPVIEW1"
+        done
+    else
+        echo "$ALL" > "$TMPVIEW1"
+    fi
+}
+
+viewContact.getSortedRows()
+{
+    # dito kinukuha ung sorted rows for the generated sorted lines
+    echo -n > "$TMPVIEW4"
+    for i in $(seq 0 $(($LNUM - 1)));do
+         sed "${SORTEDLINES[$i]}q;d" "$TMPVIEW1" >> "$TMPVIEW4"
+    done
+}
+
+viewContact.displayPages()
+{
+    # dito ung parang page bla bla
+    LINELAST=$LINEEND
+    if [ $LINEEND -gt $LNUM ]; then
+        (( LINELAST = $LNUM - 1 ))
+    fi
+
+    echo "$HEADFIELD" > "$TMPVIEW3"; echo >> "$TMPVIEW3"
+    (sed -n "${LINESTART},${LINELAST}p" < "$TMPVIEW4") >>  "$TMPVIEW3"
+    cat "$TMPVIEW3" | column -t -s: -e
+
+    SORTEDFIELD=$(echo "$HEADFIELD" | cut -f"$SFLD" -d":")
+    echo; echo "Sorted $ORDERSTR by [$SORTEDFIELD]";
+    echo "Showing line ${LINESTART}-${LINELAST} out of $((LNUM-1))"
+}
+
+ViewContact.Show()
+{
+    log -q "App in ViewContact..."
+
+    viewContact.set
+    viewContact.initDataset
+
+    while [ $APPSTATE -eq $AppState_VIEW ]; do
+        if $TOUPDATE; then
+            echo "Please wait while we load your contacts..."
+            viewContact.sort
+            viewContact.collapse
+            viewContact.getSortedRows
+        fi
+        clear
+        echo "ViewContact"
+        echo
+
+        viewContact.showHeader
+        viewContact.displayPages
+        viewContact.readKey
+    done
+
+    Menu.AnyKey
+    viewContact.unset
+}

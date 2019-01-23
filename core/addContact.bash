@@ -3,7 +3,7 @@
 shopt -s expand_aliases
 alias log="$PWD/util/log.bash"
 
-echo "HELLO - ADD CONTACT"
+# echo "HELLO - ADD CONTACT"
 
 FN="$1"
 MN="$2"
@@ -22,7 +22,7 @@ SQL="INSERT INTO Contact(firstName, middleName, lastName, sex, phone, email, add
      VALUES ('${FN}', '${MN}', '${LN}', '${SX}', '${PN}', '${EA}', '${AD}', '${CT}', '${ZP}', '${NOW}');"
 
 if query.bash "$SQL"; then
-    log "Add Contact Success..."
+    log "Contact Successfully Added..."
     exit 0
 fi
 

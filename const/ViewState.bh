@@ -1,0 +1,6 @@
+#!/bin/bash
+ViewState_NULL=0
+ViewState_EDIT=1
+ViewState_DELETE=2
+ViewState_SEARCH=3
+ViewState_NUM=4

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+
+LoadContact.Show()
+{
+    echo "Load Contact"
+    Menu.AnyKey
+}
