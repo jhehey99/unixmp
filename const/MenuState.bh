@@ -1,9 +1,7 @@
 #!/bin/bash
 MenuState_NULL=0
 MenuState_ADD=1
-MenuState_EDIT=2
-MenuState_DELETE=3
-MenuState_VIEW=4
-MenuState_LOAD=5
-MenuState_QUIT=6
-MenuState_NUM=7
+MenuState_VIEW=2
+MenuState_LOAD=3
+MenuState_QUIT=4
+MenuState_NUM=5

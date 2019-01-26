@@ -1,0 +1,8 @@
+[ Incorrect colons ]
+[ Line numbers ]
+49
+[ Contacts ]
+Janella:Calley:Adriane::Janella.Adriane@protonmail.mil:4445 Libertad St.:Marikina City:
+Kelcy::Talia:F:9055683152:Kelcy.Talia@protonmail.net::
+Coretta:Tiffy:Celia:M:9048442363:Coretta.Celia@yahoo.mil:4844 U. N. Avenue St.:Caloocan City2363
+

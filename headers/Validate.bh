@@ -27,7 +27,7 @@ validate.isNameValid()
     validate.doesExceedMax ${#1} 50; [ $? -eq 1 ] && return 1
 
     # check if contains non-alpha characters
-    if echo "$1" | grep -iq "[^a-z[:space:]]"; then
+    if echo "$1" | grep -iq '[^a-z[:space:]-]'; then
         VERRMSG="This field must only consist of alpha characters..."
         log -q "$VERRMSG"
         return 1
@@ -39,8 +39,8 @@ validate.isNameValid()
 validate.isSexValid()
 {
     case "$1" in
-        *[^mMfFnN]*)
-            VERRMSG="This field must be [M/F/N] only..."
+        *[^mMfFoOnN]*)
+            VERRMSG="This field must be [M/F/O/N] only..."
             log -q "$VERRMSG"
             return 1;;
     esac

@@ -1,8 +1,180 @@
 #!/bin/bash
 
+loadContact.set()
+{
+    TMPVALID="${TMP}/tmp_valid.txt"
+    TMPINVALID="${TMP}/tmp_invalid.txt"
+    echo -n "" > "$TMPVALID"
+}
+
+loadContact.unset()
+{
+    rm $TMPVALID
+    unset TMPVALID TMPINVALID
+}
+
+loadContact.getFile()
+{
+    CANLOAD=true
+    echo -n "Enter name of file to load: "
+    read FILE
+
+    if [ ! -f "$FILE" ]; then
+        echo "File doesn't exist"
+        CANLOAD=false
+    fi
+
+    # Date now
+    NOW=$(date +"%F")
+    NLINE=$(cat "$FILE" | wc -l)
+}
+
+loadContact.validate()
+{
+    echo "Please wait while the contacts are being verified and loaded..."
+
+    COLONNUM=8
+
+    INVALIDLINES=()
+    VALIDLINES=()
+    INCCOLONS=()
+    MISSREQ=()
+
+    for (( i=1; i<=NLINE; i++)); do
+        ENTRIES=()
+        VALID=true
+        # get line
+        LINE=$(sed "${i}q;d" "$FILE")
+        # pag mali number of colons invalid na sya
+        NCOLON=$(echo "$LINE" | grep -o ":" | wc -l)
+        if [ $NCOLON -ne $COLONNUM ]; then
+            INCCOLONS+=("$i")
+            VALID=false
+            continue
+        fi
+
+        # NAKUKUHA NA UNG QUOTED STRINGS, I-LALAGAY NALANG SA ADD CONTACT
+        local TMPFILE="${TMP}/tmp_quoted"
+        echo "$LINE" | sed "s/:/\n/g" > "$TMPFILE"
+
+        # nakuha na ung mga fields dito into an array
+        while read -r INFO; do
+            ENTRIES+=("$INFO")
+        done < "$TMPFILE"
+
+        ENTRYLEN=${#ENTRIES[*]}
+        # echo "LENGTH: ${ENTRYLEN}"
+
+        # missing required fields
+        if [ "${ENTRIES[$EditState_FN]}" = "none" -o "${ENTRIES[$EditState_LN]}" = "none" ]; then
+            MISSREQ+=("$i")
+            VALID=false
+            continue
+        fi
+
+        # validate bawal field
+        for (( l=0; l<ENTRYLEN; l++ )); do
+            FLD="${ENTRIES[$l]}"
+            if [ -n "$FLD" ]; then
+                if ! ${VALIDATION[$l]} "$FLD"; then
+                    INVALIDLINES+=("$i")
+                    VALID=false
+                    break 1
+                fi
+            fi
+        done
+
+        # wala eh valid talaga boi
+        if $VALID; then
+            # pag empty ung empty-able field, palitan nung none equivalent nya
+            FieldEditor.FillEmptyFields
+
+            HAHASTR=""
+            for (( a=0; a<ENTRYLEN; a++ )); do
+                HAHASTR="${HAHASTR}${ENTRIES[$a]}:"
+            done
+            HAHASTR="${HAHASTR}${NOW}"
+            # echo "$HAHASTR"
+            echo "$HAHASTR" >> "$TMPVALID"
+            VALIDLINES+=("$i")
+        fi
+
+        unset ENTRIES
+    done
+}
+
+loadContact.displayResults()
+{
+    echo;
+
+    echo -e "\tIncorrect colons lines: " ${INCCOLONS[*]}; echo
+    echo -e "\tMissing required fields lines: " ${MISSREQ[*]}; echo
+    echo -e "\tInvalid fields lines: " ${INVALIDLINES[*]}; echo
+    echo -e "\tYou may view more details in ${TMPINVALID}"; echo
+
+    echo -e "\tValid fields lines: " ${VALIDLINES[*]}; echo
+
+    echo -e "\tValid line entries shall be added"; echo
+}
+
+loadContact.saveValidated()
+{
+    # clear invalid temp file
+    echo -n "" > "$TMPINVALID"
+
+    # Incorrect colons
+    if [ ${#INCCOLONS[*]} -gt 0 ]; then
+        SEDINCCOLONS="$(echo ${INCCOLONS[*]} | sed "s/ /p;/g")p"
+        log "[ Incorrect colons ]" >> "$TMPINVALID"
+        log "[ Line numbers ]" >> "$TMPINVALID"
+        log ${INCCOLONS[*]} >> "$TMPINVALID"
+        log "[ Contacts ]" >> "$TMPINVALID"
+        (sed -n "$SEDINCCOLONS" < "$FILE") >> "$TMPINVALID"
+        echo "" >> "$TMPINVALID"
+    fi
+
+    # Missing required fields
+    if [ ${#MISSREQ[*]} -gt 0 ]; then
+        SEDMISSREQ="$(echo ${MISSREQ[*]} | sed "s/ /p;/g")p"
+        log "[ Missing required fields ]" >> "$TMPINVALID"
+        log "[ Line numbers ]" >> "$TMPINVALID"
+        log ${MISSREQ[*]} >> "$TMPINVALID"
+        log "[ Contacts ]" >> "$TMPINVALID"
+        (sed -n "$SEDMISSREQ" < "$FILE") >> "$TMPINVALID"
+        echo "" >> "$TMPINVALID"
+    fi
+
+    # Invalid fields
+    if [ ${#INVALIDLINES[*]} -gt 0 ]; then
+        SEDINVALIDLINES="$(echo ${INVALIDLINES[*]} | sed "s/ /p;/g")p"
+        log "[ Invalid fields ]" >> "$TMPINVALID"
+        log "[ Line numbers ]" >> "$TMPINVALID"
+        log ${INVALIDLINES[*]} >> "$TMPINVALID"
+        log "[ Contacts ]" >> "$TMPINVALID"
+        (sed -n "$SEDINVALIDLINES" < "$FILE") >> "$TMPINVALID"
+    fi
+}
+
+loadContact.contactsToSqlValues()
+{
+    sed -i "s/:/\", \"/g" "$TMPVALID"
+    sed -i "s/^/(\"/" "$TMPVALID"
+    sed -i "s/$/\"),/" "$TMPVALID"
+    sed -i "$ s/.$/;/" "$TMPVALID"
+}
 
 LoadContact.Show()
 {
-    echo "Load Contact"
-    Menu.AnyKey
+    clear
+    log "Load Contact"
+
+    loadContact.set
+    loadContact.getFile
+    loadContact.validate
+    loadContact.displayResults
+    loadContact.saveValidated
+    loadContact.contactsToSqlValues
+    addContacts "$TMPVALID"
+
+    Menu.AnyKeyToMenu
 }

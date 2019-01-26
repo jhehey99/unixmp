@@ -44,20 +44,40 @@ USEDB="USE ${DBNAME};"
 # Create the Contact table
 CREATETABLE="\
 USE ${DBNAME};\
-CREATE TABLE Contact( \
-                    id INT NOT NULL AUTO_INCREMENT, \
-                    firstName VARCHAR(50) NOT NULL, \
-                    middleName VARCHAR(50), \
-                    lastName VARCHAR(50) NOT NULL, \
-                    sex CHAR(1), \
-                    phone VARCHAR(10), \
-                    email VARCHAR(255), \
-                    address VARCHAR(255), \
-                    city VARCHAR(50), \
-                    zipCode INT(4), \
-                    dateAdded DATE NOT NULL, \
-                    PRIMARY KEY ( id ) \
-                    );"
+create table Contact
+(
+	id int auto_increment, \
+	firstName varchar(50) default "none" not null, \
+	middleName varchar(50) default "none", \
+	lastName varchar(50) default "none" not null, \
+	sex char default "N", \
+	phone varchar(10) default "none", \
+	email varchar(255) default "none", \
+	address varchar(255) default "none", \
+	city varchar(50) default "none", \
+	zipCode int(4) default 0000, \
+	dateAdded DATE not null, \
+	constraint Contacts_pk \
+		primary key (id) \
+);
+
+create unique index Contact_Unique \
+	on Contact (firstName, lastName, phone);"
+
+# CREATE TABLE Contact( \
+#                     id INT NOT NULL AUTO_INCREMENT, \
+#                     firstName VARCHAR(50) NOT NULL, \
+#                     middleName VARCHAR(50), \
+#                     lastName VARCHAR(50) NOT NULL, \
+#                     sex CHAR(1), \
+#                     phone VARCHAR(10), \
+#                     email VARCHAR(255), \
+#                     address VARCHAR(255), \
+#                     city VARCHAR(50), \
+#                     zipCode INT(4), \
+#                     dateAdded DATE NOT NULL, \
+#                     PRIMARY KEY ( id ) \
+#                     );"
 
 # Show Tables
 SHOWTABLES="SHOW TABLES;"

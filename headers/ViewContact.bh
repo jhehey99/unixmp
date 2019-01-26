@@ -50,6 +50,52 @@ viewContact.unset()
     unset VCOLTMPS
 }
 
+viewContact.invalidSearch()
+{
+    echo "Invalid search field"
+    echo "Press any key to return to view contacts..."
+    read -s -n1
+}
+
+viewContact.search()
+{
+    clear
+
+    echo "Select the number of the field you want to search"
+    for (( i=0; i<Con_NUM; i++)); do
+        echo -e "\t[$((i+1))] ${Con_ALL[$i]}"
+    done
+    echo
+    echo -n "Enter here: "
+    read SFIELD
+
+    if ! echo "$SFIELD" | grep -qw "[0-9]*"; then
+        viewContact.invalidSearch
+        return
+    fi
+
+    if [ "$SFIELD" -lt 1 -o "$SFIELD" -gt $Con_NUM ]; then
+        viewContact.invalidSearch
+        return
+    fi
+
+    local FIELDSTR="${Con_ALL[$((SFIELD-1))]}"
+
+    echo -en "\tWhat do you want to search? "
+    read SVALUE
+    echo
+
+    ALL=$(searchContact "$FIELDSTR" "$SVALUE")
+
+    if [ -z "$ALL" ]; then
+        log "\tNo results"
+    fi
+
+    echo "$ALL" | column -t -s: -e
+    echo
+    ViewContact.AnyKeyToView
+}
+
 viewContact.readKey()
 {
     TOUPDATE=false
@@ -78,8 +124,26 @@ viewContact.readKey()
                 (( VIEWSTATE+= 1 ))
             fi
         ;;
+        "") # Enter
+            case $VIEWSTATE in
+                $ViewState_EDIT)
+                    FROMVIEW=true
+                    APPSTATE=$AppState_EDIT
+                ;;
+                $ViewState_DELETE)
+                    APPSTATE=$AppState_DELETE
+                ;;
+                $ViewState_SEARCH)
+                    viewContact.search
+                ;;
+            esac
+        ;;
         q)
-            APPSTATE=$AppState_MENU
+            if [ $VIEWSTATE -eq $ViewState_SEARCH ]; then
+                VIEWSTATE=$ViewState_NULL
+            else
+                APPSTATE=$AppState_MENU
+            fi
         ;;
         [1-9])
             SFLD=$KEY
@@ -105,7 +169,7 @@ viewContact.readKey()
         ;;
         v)
             TOUPDATE=true
-            if "$TOCOLLIPS"; then
+            if $TOCOLLIPS; then
                 TOCOLLIPS=false
             else
                 TOCOLLIPS=true
@@ -124,6 +188,8 @@ viewContact.readKey()
             echo -e "\tv => Toggle Collapse/Uncollapse Fields"
             echo -e "\tb => Go Back To Previous Page"
             echo -e "\tn => Go To Next Page"
+            echo -e "\ta => Navigate Options to the Left"
+            echo -e "\td => Navigate Options to the Right"
             echo -e "\tq => Quit"
             while read -s -n1 KEY; do
                 if [ "$KEY" = "q" ]; then
@@ -157,7 +223,7 @@ viewContact.showHeader()
 viewContact.initDataset()
 {
     # retrieve the data from database
-    ALL=$(viewContact ${Con_ALL[*]})
+    ALL=$(getAllContacts ${Con_ALL[*]})
 
     # get total line number
     LNUM=$(echo "$ALL" | wc -l)
@@ -165,7 +231,6 @@ viewContact.initDataset()
     (( NFIELD=$LNUM-1 ))
     HEADFIELD=$(echo "$ALL" | head -1 )
     ALL=$(echo "$ALL" | tail -"$NFIELD")
-
 }
 
 viewContact.sort()
@@ -179,20 +244,20 @@ viewContact.collapse()
 {
     # dito pinapa-iksi ung mahahaba
     if $TOCOLLIPS; then
-        echo "$ALL" | cut -f1 -d: > "$TMPVIEW1"
-        for i in $(seq 2 $Con_NUM); do
+       echo "$ALL" | cut -f1 -d: > "$TMPVIEW1"
+       for i in $(seq 2 $Con_NUM); do
 
-            # ilagay sa TMPCOLLIPS file ung i-cocollips
-            echo "$ALL" | cut -f"$i" -d: > "$TMPCOLLIPS"
+           # ilagay sa TMPCOLLIPS file ung i-cocollips
+           echo "$ALL" | cut -f"$i" -d: > "$TMPCOLLIPS"
 
-            # lagay sa 2
-            collips $NCOL > "$TMPVIEW2"
+           # lagay sa 2
+           collips $NCOL > "$TMPVIEW2"
 
-            # paste 1 at 2, lagay sa 1
-            echo "$(paste "$TMPVIEW1" "$TMPVIEW2" -d:)" > "$TMPVIEW1"
-        done
+           # paste 1 at 2, lagay sa 1
+           echo "$(paste "$TMPVIEW1" "$TMPVIEW2" -d:)" > "$TMPVIEW1"
+       done
     else
-        echo "$ALL" > "$TMPVIEW1"
+       echo "$ALL" > "$TMPVIEW1"
     fi
 }
 
@@ -201,7 +266,7 @@ viewContact.getSortedRows()
     # dito kinukuha ung sorted rows for the generated sorted lines
     echo -n > "$TMPVIEW4"
     for i in $(seq 0 $(($LNUM - 1)));do
-         sed "${SORTEDLINES[$i]}q;d" "$TMPVIEW1" >> "$TMPVIEW4"
+        sed "${SORTEDLINES[$i]}q;d" "$TMPVIEW1" >> "$TMPVIEW4"
     done
 }
 
@@ -210,7 +275,7 @@ viewContact.displayPages()
     # dito ung parang page bla bla
     LINELAST=$LINEEND
     if [ $LINEEND -gt $LNUM ]; then
-        (( LINELAST = $LNUM - 1 ))
+       (( LINELAST = $LNUM - 1 ))
     fi
 
     echo "$HEADFIELD" > "$TMPVIEW3"; echo >> "$TMPVIEW3"
@@ -245,6 +310,15 @@ ViewContact.Show()
         viewContact.readKey
     done
 
-    Menu.AnyKey
     viewContact.unset
+    if [ $APPSTATE -eq $AppState_MENU ]; then
+        Menu.AnyKeyToMenu
+    fi
+}
+
+ViewContact.AnyKeyToView()
+{
+    echo -n "Press any key to go back to view contacts..."
+    read -s -n1
+    APPSTATE=$AppState_VIEW
 }

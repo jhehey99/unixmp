@@ -10,6 +10,11 @@ TOVIEW=( $@ )
 FIELDS=$(echo ${TOVIEW[*]} | tr " " ",")
 
 SQL="SELECT ${FIELDS} From Contact;"
-query.bash "$SQL" | cut -f1 -d"|" | tr "\t" ":"
 
-exit 0
+if query.bash "$SQL" | cut -f1 -d"|" | tr "\t" ":"; then
+    log -q "Contacts Successfully Obtained..."
+    exit 0
+fi
+
+log -q "Get Contacts Failed..."
+exit 1

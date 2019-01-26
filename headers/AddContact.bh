@@ -1,175 +1,41 @@
 #!/bin/bash
 
-addContact.set()
+addContact.showHeader()
 {
-    LAYOUT="${L}/edit_contact.bl"
-    EDITSTATE=$EditState_FN
-    ENTRIES=()
+    echo "Add Contact"
 }
 
-addContact.unset()
+addContact.tryFinish()
 {
-    unset LAYOUT
-    unset SELECTED
-}
-
-addContact.enterValue()
-{
-    # kunin ung new value
-    echo -en "\t\tEnter new value: \t"
-    read ENTRY
-
-    case "$ENTRY" in
-        "//c") # Cancel Entry
-            return
-        ;;
-        "") # Remove Entry
-            ENTRIES[$EDITSTATE]=""
-            echo "Remove ENTRY"
-        ;;
-        *)    # Validate Entry
-            if ${VALIDATION[$EDITSTATE]} "$ENTRY"; then
-                ENTRIES[$EDITSTATE]="$ENTRY"
-            else
-                echo -e "\n\t\t$VERRMSG"
-                echo -ne "\t\tError! Press any key to try again."
-                read -s -n1
-            fi
-        ;;
-    esac
-}
-
-addContact.finish()
-{
-    # required first at last name
-    CANFIN=true
-    if [ -z "${ENTRIES[$EditState_FN]}" ]; then
-        log "\tCan't Finish! First Name is required..."
-        CANFIN=false
+    if $FINISHEDIT; then
+        FINISHEDIT=false
+        FieldEditor.FillEmptyFields
+        FINMSG=$(addContact \
+        "${ENTRIES[$EditState_FN]}" \
+        "${ENTRIES[$EditState_MN]}" \
+        "${ENTRIES[$EditState_LN]}" \
+        "${ENTRIES[$EditState_SX]}" \
+        "${ENTRIES[$EditState_PN]}" \
+        "${ENTRIES[$EditState_EA]}" \
+        "${ENTRIES[$EditState_AD]}" \
+        "${ENTRIES[$EditState_CT]}" \
+        "${ENTRIES[$EditState_ZP]}")
     fi
-
-    if [ -z "${ENTRIES[$EditState_LN]}" ]; then
-        log "\tCan't Finish! Last Name is required..."
-        CANFIN=false
-    fi
-
-    if $CANFIN; then
-        FINMSG=$(addContact ${ENTRIES[*]})
-    else
-        echo -ne "\tPress any key to try again."
-        read -s -n1
-    fi
-}
-
-addContact.readKey()
-{
-    FINMSG=""
-    read -s -n1 KEY
-    case $KEY in
-        q)
-            APPSTATE=$AppState_MENU
-        ;;
-        w) # Up
-            if [ $EDITSTATE -gt $(( $EditState_NULL + 1 )) ]; then
-                (( EDITSTATE-= 1 ))
-            fi
-        ;;
-        s) # Down
-            if [ $EDITSTATE -lt $(( $EditState_NUM - 1)) ]; then
-                (( EDITSTATE+= 1 ))
-            fi
-        ;;
-        f) # Finish
-            addContact.finish
-        ;;
-        c) # Clear
-            for (( i=0; i<${#ENTRIES[*]}; i++ )); do
-                ENTRIES[$i]=""
-            done
-        ;;
-        "")
-            # set na walang error muna
-            VERRMSG=""
-            echo "[ Type \"//c\" to cancel ]"
-
-            # pag may value na ung field, pakita rin natin para alam binabago
-            CURVALUE="${ENTRIES[$EDITSTATE]}"
-            if [ -n "$CURVALUE" ]; then
-                echo -e "\t\tCurrent value: \t\t$CURVALUE"
-            fi
-
-            addContact.enterValue
-        ;;
-    esac
-}
-
-addContact.write()
-{
-    local SSTR="$1                                                 "
-    SSTR="${SSTR:0:28}$2"
-    (echo -n "    ";
-    echo "$SSTR";
-    echo "                                                 ") >> "$LAYOUT"
-}
-
-addContact.showDefault()
-{
-    echo "Add Contact" > "$LAYOUT"
-    echo "" >> "$LAYOUT"
-
-    echo "#################################################################################################" >> "$LAYOUT"
-    # echo "" >> "$LAYOUT"
-    echo "                                                 " >> "$LAYOUT"
-
-    addContact.write "*First Name: " "${ENTRIES[$EditState_FN]}"
-    LSTART=$(cat "$LAYOUT" | wc -l)
-
-    addContact.write  "Middle Name: " "${ENTRIES[$EditState_MN]}"
-    addContact.write  "*Last Name: " "${ENTRIES[$EditState_LN]}"
-    addContact.write "Sex [M/F/N]: " "${ENTRIES[$EditState_SX]}"
-    addContact.write "Phone Number: (+63)" "${ENTRIES[$EditState_PN]}"
-    addContact.write "Email Address: " "${ENTRIES[$EditState_EA]}"
-    addContact.write "Address: " "${ENTRIES[$EditState_AD]}"
-    addContact.write "City: " "${ENTRIES[$EditState_CT]}"
-    addContact.write "Zip Code: " "${ENTRIES[$EditState_ZP]}"
-    (( LEND=$(cat "$LAYOUT" | wc -l) + 1 ))
-
-    echo -e "[ Select a Field by Pressing the \"Enter\" Key | w - Up | s - Down ]" >> "$LAYOUT"
-    echo "#################################################################################################" >> "$LAYOUT"
-    # echo "" >> "$LAYOUT"
-}
-
-addContact.update()
-{
-    local LSTEP=2
-
-    local LCUR=$(( $LSTART + $LSTEP * $EDITSTATE))
-    local LCURPREV=$(( $LCUR - 2))
-    local LCURNEXT=$(( $LCUR + 1))
-
-    local SEPARATOR="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-
-    sed -i "${LCURPREV}i $SEPARATOR" "$LAYOUT"
-    sed -i "${LCURNEXT}i $SEPARATOR" "$LAYOUT"
-
-    (( LBEGIN=$LSTART - 2 ))
-    sed -i "${LBEGIN},${LEND}s/./||/28" "$LAYOUT"
-
-    cat "$LAYOUT"
-    echo -e "$FINMSG"
 }
 
 AddContact.Show()
 {
-    addContact.set
+    FieldEditor.Set
 
     while [ $APPSTATE -eq $AppState_ADD ]; do
         clear
-        addContact.showDefault
-        addContact.update
-        addContact.readKey
+        addContact.showHeader
+        FieldEditor.ShowDefault
+        FieldEditor.Update
+        FieldEditor.ReadKey
+        addContact.tryFinish
     done
 
-    Menu.AnyKey
-    addContact.unset
+    Menu.AnyKeyToMenu
+    FieldEditor.Unset
 }

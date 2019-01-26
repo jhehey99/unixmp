@@ -1,0 +1,220 @@
+#!/bin/bash
+
+FieldEditor.Set()
+{
+    LAYOUT="${L}/edit_fields.bl"
+    EDITSTATE=$EditState_FN
+    FINISHEDIT=false
+    FROMVIEW=false
+    ENTRIES=()
+
+    # make sure that LAYOUT file exists and empty
+    echo -n "" > "$LAYOUT"
+}
+
+FieldEditor.Unset()
+{
+    # empty out the LAYOUT file
+    echo -n "" > "$LAYOUT"
+    unset LAYOUT EDITSTATE FINISHEDIT ENTRIES
+}
+
+fieldEditor.write()
+{
+    local SSTR="$1                                                 "
+    SSTR="${SSTR:0:28}$2"
+    (echo -n "    ";
+    echo "$SSTR";
+    echo "                                                 ") >> "$LAYOUT"
+}
+
+fieldEditor.enterValue()
+{
+    # kunin ung new value
+    echo -en "\t\tEnter new value: \t"
+    read ENTRY
+
+    case "$ENTRY" in
+        "//c") # Cancel Entry
+            return
+        ;;
+        "") # Remove Entry
+            ENTRIES[$EDITSTATE]=""
+        ;;
+        *)    # Validate Entry
+            if ${VALIDATION[$EDITSTATE]} "$ENTRY"; then
+                ENTRIES[$EDITSTATE]="$ENTRY"
+            else
+                echo -e "\n\t\t$VERRMSG"
+                echo -ne "\t\tError! Press any key to try again."
+                read -s -n1
+            fi
+        ;;
+    esac
+}
+
+fieldEditor.scanRequirements()
+{
+    # return status
+    # 0 - All requirements are filled up
+    # 1 - There are missing requirements
+    if [ -z "${ENTRIES[$EditState_FN]}" ]; then
+        log "\tCan't Finish! First Name is required..."
+        return 1
+    fi
+
+    if [ -z "${ENTRIES[$EditState_LN]}" ]; then
+        log "\tCan't Finish! Last Name is required..."
+        return 1
+    fi
+
+    return 0
+}
+
+FieldEditor.FillEmptyFields()
+{
+    NONEFIELDS=( "$EditState_FN"
+                 "$EditState_MN"
+                 "$EditState_LN"
+                 "$EditState_PN"
+                 "$EditState_EA"
+                 "$EditState_AD"
+                 "$EditState_CT" )
+
+    # mga varchar naman to, kaya none nalang
+    for j in ${NONEFIELDS[*]}; do
+        if [ -z "${ENTRIES[$j]}" ]; then
+            ENTRIES[$j]="none"
+        fi
+    done
+
+    # default sex is N since CHAR(1) lang sya
+    if [ -z "${ENTRIES[$EditState_SX]}" ]; then
+        ENTRIES[$EditState_SX]="N"
+    fi
+
+    # default ZIP is 0 since int sya
+    if [ -z "${ENTRIES[$EditState_ZP]}" ]; then
+        ENTRIES[$EditState_ZP]=0
+    fi
+}
+
+FieldEditor.LoadContact()
+{
+    if [ -z "$CONTACTTOEDIT" ]; then
+        return
+    fi
+
+    # Start sa 2, cos first name, di pwede i-edit ID
+    # End sa zip, di pwede i-edit date added
+    ENTRIES=()
+    for (( i=2; i<Con_NUM; i++))
+    {
+        local FIELD=$(echo $CONTACTTOEDIT | cut -f"${i}" -d:)
+        ENTRIES+=("${FIELD}")
+    }
+}
+
+FieldEditor.ShowDefault()
+{
+    echo -n "" > "$LAYOUT"
+    echo "" >> "$LAYOUT"
+
+    echo "#################################################################################################" >> "$LAYOUT"
+    echo -e "[ Select a Field by Pressing the \"Enter\" Key ]" >> "$LAYOUT"
+    echo "                                                 " >> "$LAYOUT"
+
+    fieldEditor.write "*First Name: " "${ENTRIES[$EditState_FN]}"
+    LSTART=$(cat "$LAYOUT" | wc -l)
+
+    fieldEditor.write  "Middle Name: " "${ENTRIES[$EditState_MN]}"
+    fieldEditor.write  "*Last Name: " "${ENTRIES[$EditState_LN]}"
+    fieldEditor.write "Sex [M/F/O/N]: " "${ENTRIES[$EditState_SX]}"
+    fieldEditor.write "Phone Number: (+63)" "${ENTRIES[$EditState_PN]}"
+    fieldEditor.write "Email Address: " "${ENTRIES[$EditState_EA]}"
+    fieldEditor.write "Address: " "${ENTRIES[$EditState_AD]}"
+    fieldEditor.write "City: " "${ENTRIES[$EditState_CT]}"
+    fieldEditor.write "Zip Code: " "${ENTRIES[$EditState_ZP]}"
+    (( LEND=$(cat "$LAYOUT" | wc -l) + 1 ))
+
+    echo -e "[ f - Finish | w - Up | s - Down ]" >> "$LAYOUT"
+    echo "#################################################################################################" >> "$LAYOUT"
+}
+
+FieldEditor.Update()
+{
+    local LSTEP=2
+
+    local LCUR=$(( $LSTART + $LSTEP * $EDITSTATE))
+    local LCURPREV=$(( $LCUR - 2))
+    local LCURNEXT=$(( $LCUR + 1))
+
+    local SEPARATOR="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+
+    sed -i "${LCURPREV}i $SEPARATOR" "$LAYOUT"
+    sed -i "${LCURNEXT}i $SEPARATOR" "$LAYOUT"
+
+    (( LBEGIN=$LSTART - 2 ))
+    sed -i "${LBEGIN},${LEND}s/./||/28" "$LAYOUT"
+
+    cat "$LAYOUT"
+    echo -e "$FINMSG"
+}
+
+FieldEditor.ReadKey()
+{
+    FINMSG=""
+    read -s -n1 KEY
+    case $KEY in
+        q)
+            echo -n "Are you sure you want to go back? [Y/N]: "
+            read -n1 SURE
+            echo
+            case "$SURE" in
+                [yY])
+                    if $FROMVIEW; then
+                        APPSTATE=$AppState_VIEW
+                    else
+                        APPSTATE=$AppState_MENU
+                    fi
+                ;;
+            esac
+        ;;
+        w) # Up
+            if [ $EDITSTATE -gt $(( $EditState_NULL + 1 )) ]; then
+                (( EDITSTATE-= 1 ))
+            fi
+        ;;
+        s) # Down
+            if [ $EDITSTATE -lt $(( $EditState_NUM - 1)) ]; then
+                (( EDITSTATE+= 1 ))
+            fi
+        ;;
+        f) # Finish
+            if fieldEditor.scanRequirements; then
+                FINISHEDIT=true
+            else
+                echo -ne "\tPress any key to try again."
+                read -s -n1
+            fi
+        ;;
+        c) # Clear
+            for (( i=0; i<${#ENTRIES[*]}; i++ )); do
+                ENTRIES[$i]=""
+            done
+        ;;
+        "")
+            # set na walang error muna
+            VERRMSG=""
+            echo "[ Type \"//c\" to cancel ]"
+
+            # pag may value na ung field, pakita rin natin para alam binabago
+            CURVALUE="${ENTRIES[$EDITSTATE]}"
+            if [ -n "$CURVALUE" ]; then
+                echo -e "\t\tCurrent value: \t\t$CURVALUE"
+            fi
+
+            fieldEditor.enterValue
+        ;;
+    esac
+}

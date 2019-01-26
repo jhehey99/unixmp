@@ -15,6 +15,16 @@ pag walang laman new value lng
 pag tinype sa value: /c macacancel ung current edit
 
 
+FieldEditor.Initialize Data
+
+
+These lines have incorrect number of colons
+
+doesnt have required fields (first name and last name)
+
+invalid fn, mn,
+
+
 
 
 [ Select Field by Pressing the "Enter" Key ]
@@ -23,4 +33,14 @@ pag tinype sa value: /c macacancel ung current edit
 
 sa VIEW
 
-EDIT | DELETE | SEARCH 
+EDIT | DELETE | SEARCH
+
+
+New header for fields
+
+Edit Contact
+Delete Contact
+Load Contact
+
+
+Check Duplicate all -> Field Editor

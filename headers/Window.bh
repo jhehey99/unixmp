@@ -16,13 +16,10 @@ Window.Initialize()
     stty cols $Window_WIDTH
     clear
     log -q "Window - Initialized..."
-
-    # init natin dito lahat ng views
 }
 
 Window.Show()
 {
-    clear
     case $APPSTATE in
         $AppState_MENU)
             resize -s $Window_HEIGHT $Window_WIDTH > /dev/null
